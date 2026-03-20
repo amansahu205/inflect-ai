@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuthStore } from "@/store/authStore";
+import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/inflect-logo.png";
 
 const AppNavbar = () => {

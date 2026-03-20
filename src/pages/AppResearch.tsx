@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import VoiceMode from "@/components/app/VoiceMode";
 import ChatMode from "@/components/app/ChatMode";
 import type { ChatMessage } from "@/components/chat/ChatThread";
+import type { AnswerResult } from "@/types/api";
 
 interface QueryRow {
   id: string;

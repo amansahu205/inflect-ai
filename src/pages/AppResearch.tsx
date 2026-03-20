@@ -329,6 +329,11 @@ const AppResearch = () => {
 
   const handleTradeCancel = useCallback(() => { setPendingOrder(null); setTradeLoading(false); setFillResult(null); }, []);
 
+  const handleClearQueries = useCallback(() => {
+    setQueries([]);
+    useSessionStore.getState().clearSession();
+  }, []);
+
   const handleNewMessage = useCallback((userMsg: ChatMessage, assistantMsg: ChatMessage) => {
     setChatMessages((prev) => [...prev, userMsg, assistantMsg]);
   }, []);
@@ -347,6 +352,7 @@ const AppResearch = () => {
           onSubmit={handleVoiceSubmit}
           onGenerateThesis={handleGenerateThesis}
           onPlotTrend={handlePlotTrend}
+          onClearQueries={handleClearQueries}
           voiceStateOverride={voiceStateOverride}
         />
       ) : (

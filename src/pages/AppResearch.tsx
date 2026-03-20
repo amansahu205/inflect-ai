@@ -5,6 +5,7 @@ import { usePortfolioStore } from "@/store/portfolioStore";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { analyzeQuery } from "@/api/query";
+import { getChartData } from "@/api/chart";
 import { getQuote } from "@/api/market";
 import { executeTrade as executeTradeApi } from "@/api/trades";
 import VoiceMode from "@/components/app/VoiceMode";
@@ -278,6 +279,16 @@ const AppResearch = () => {
     }
   }, []);
 
+  // --- Plot trend ---
+  const handlePlotTrend = useCallback(async (ticker: string, metric: string | null) => {
+    try {
+      return await getChartData(ticker, metric, null);
+    } catch {
+      toast({ title: "Error", description: "Couldn't load chart data", variant: "destructive" });
+      return null;
+    }
+  }, []);
+
   // --- Trade execution ---
   const handleTradeConfirm = useCallback(async () => {
     if (!pendingOrder || !user) return;
@@ -333,6 +344,7 @@ const AppResearch = () => {
           queries={queries}
           onSubmit={handleVoiceSubmit}
           onGenerateThesis={handleGenerateThesis}
+          onPlotTrend={handlePlotTrend}
           voiceStateOverride={voiceStateOverride}
         />
       ) : (

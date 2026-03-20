@@ -4,6 +4,7 @@ import OutputPanel from "./OutputPanel";
 import VoiceButton from "@/components/voice/VoiceButton";
 import type { VoiceState } from "@/components/voice/VoiceButton";
 import type { AnswerResult, StockQuote, ThesisResult } from "@/types/api";
+import type { ChartData } from "@/api/chart";
 
 interface VoiceSubmitResult {
   answerData: AnswerResult;
@@ -17,10 +18,11 @@ interface VoiceModeProps {
   queries: Array<{ id: string; transcript: string; response_text: string }>;
   onSubmit: (text: string) => Promise<VoiceSubmitResult | void>;
   onGenerateThesis: (ticker: string) => Promise<ThesisResult | null>;
+  onPlotTrend: (ticker: string, metric: string | null) => Promise<ChartData | null>;
   voiceStateOverride?: "idle" | "playing" | null;
 }
 
-const VoiceMode = ({ mode, onModeChange, queries, onSubmit, onGenerateThesis, voiceStateOverride }: VoiceModeProps) => {
+const VoiceMode = ({ mode, onModeChange, queries, onSubmit, onGenerateThesis, onPlotTrend, voiceStateOverride }: VoiceModeProps) => {
   const [textInput, setTextInput] = useState("");
   const [selectedOutput, setSelectedOutput] = useState<string | null>(null);
   const [answerData, setAnswerData] = useState<AnswerResult | null>(null);
@@ -28,11 +30,13 @@ const VoiceMode = ({ mode, onModeChange, queries, onSubmit, onGenerateThesis, vo
   const [metricData, setMetricData] = useState<{ metric: string; value: string; period: string; change?: string; changeDirection?: "up" | "down" } | null>(null);
   const [thesisData, setThesisData] = useState<ThesisResult | null>(null);
   const [thesisLoading, setThesisLoading] = useState(false);
+  const [chartData, setChartData] = useState<ChartData | null>(null);
   const [voiceState, setVoiceState] = useState<VoiceState>("idle");
 
   const submitQuery = async (text: string) => {
     setThesisData(null);
     setThesisLoading(false);
+    setChartData(null);
     const result = await onSubmit(text);
     if (result) {
       setAnswerData(result.answerData);
@@ -53,6 +57,14 @@ const VoiceMode = ({ mode, onModeChange, queries, onSubmit, onGenerateThesis, vo
       setThesisLoading(false);
     }
   }, [answerData, onGenerateThesis]);
+
+  const handlePlotTrend = useCallback(async () => {
+    const ticker = answerData?.ticker;
+    if (!ticker) return;
+    const metric = metricData?.metric || null;
+    const data = await onPlotTrend(ticker, metric);
+    if (data) setChartData(data);
+  }, [answerData, metricData, onPlotTrend]);
 
   const handleTextSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -162,9 +174,12 @@ const VoiceMode = ({ mode, onModeChange, queries, onSubmit, onGenerateThesis, vo
           metricData={metricData}
           thesisData={thesisData}
           thesisLoading={thesisLoading}
+          chartData={chartData}
+          chartTitle={metricData?.metric || "Price"}
+          chartTicker={answerData?.ticker || undefined}
           onChipClick={handleChipClick}
           onGenerateThesis={handleGenerateThesis}
-          onPlotTrend={() => {}}
+          onPlotTrend={handlePlotTrend}
         />
       </div>
     </div>

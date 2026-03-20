@@ -3,7 +3,10 @@ import AnswerCard from "@/components/research/AnswerCard";
 import StockCard from "@/components/charts/StockCard";
 import MetricCard from "@/components/charts/MetricCard";
 import ThesisCard from "@/components/research/ThesisCard";
+import LineChart from "@/components/charts/LineChart";
+import RSIGauge from "@/components/charts/RSIGauge";
 import type { AnswerResult, StockQuote, ThesisResult } from "@/types/api";
+import type { ChartData } from "@/api/chart";
 
 interface MetricData {
   metric: string;
@@ -20,13 +23,16 @@ interface OutputPanelProps {
   metricData?: MetricData | null;
   thesisData?: ThesisResult | null;
   thesisLoading?: boolean;
+  chartData?: ChartData | null;
+  chartTitle?: string;
+  chartTicker?: string;
   onChipClick: (text: string) => void;
   onGenerateThesis?: () => void;
   onPlotTrend?: () => void;
 }
 
-const OutputPanel = ({ content, answerData, stockQuote, metricData, thesisData, thesisLoading, onChipClick, onGenerateThesis, onPlotTrend }: OutputPanelProps) => {
-  const hasData = answerData || stockQuote || metricData || thesisData || thesisLoading;
+const OutputPanel = ({ content, answerData, stockQuote, metricData, thesisData, thesisLoading, chartData, chartTitle, chartTicker, onChipClick, onGenerateThesis, onPlotTrend }: OutputPanelProps) => {
+  const hasData = answerData || stockQuote || metricData || thesisData || thesisLoading || chartData;
 
   return (
     <div className="h-full flex flex-col overflow-y-auto" style={{ padding: 24 }}>
@@ -46,7 +52,17 @@ const OutputPanel = ({ content, answerData, stockQuote, metricData, thesisData, 
             />
           )}
 
-          {answerData && (
+          {chartData && chartTicker && (
+            <LineChart
+              data={chartData}
+              title={chartTitle || "Trend"}
+              yAxisLabel={chartTitle || "Value"}
+              ticker={chartTicker}
+              filingDates={chartData.filingDates}
+            />
+          )}
+
+          {answerData && !chartData && (
             <AnswerCard
               key={answerData.answer}
               answer={answerData.answer}
@@ -61,6 +77,10 @@ const OutputPanel = ({ content, answerData, stockQuote, metricData, thesisData, 
 
           {(thesisLoading || thesisData) && (
             <ThesisCard thesis={thesisData!} isLoading={thesisLoading} />
+          )}
+
+          {thesisData?.technical?.rsi != null && (
+            <RSIGauge value={thesisData.technical.rsi} ticker={thesisData.ticker} />
           )}
         </div>
       ) : content ? (

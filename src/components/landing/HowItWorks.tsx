@@ -17,7 +17,7 @@ const steps = [
   },
   {
     icon: TrendingUp,
-    iconColor: "#E05555",
+    iconColor: "#F0A500",
     title: "Get Answers",
     desc: "Cited answer + interactive chart in under 3 seconds",
   },

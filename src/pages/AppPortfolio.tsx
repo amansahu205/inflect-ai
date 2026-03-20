@@ -47,7 +47,15 @@ const AppPortfolio = () => {
   ];
 
   return (
-    <div style={{ padding: "24px 32px" }}>
+    <>
+      {/* Video background */}
+      <video autoPlay muted loop playsInline className="fixed inset-0 w-full h-full object-cover z-0" style={{ opacity: 0.15 }}>
+        <source src="/videos/dashboard_full.mp4" type="video/mp4" />
+      </video>
+      {/* Dark overlay */}
+      <div className="fixed inset-0 z-[1]" style={{ background: "rgba(8,12,20,0.92)" }} />
+
+      <div className="relative z-[2]" style={{ padding: "24px 32px" }}>
       <div className="grid grid-cols-4 gap-4" style={{ marginBottom: 32 }}>
         {summaryCards.map((card) => (
           <div
@@ -77,7 +85,8 @@ const AppPortfolio = () => {
 
       <h3 style={{ color: "#8892A4", fontSize: 10, letterSpacing: "0.2em", marginTop: 32, marginBottom: 16 }}>TRADE HISTORY</h3>
       <TradeHistory trades={trades.slice(0, 20)} isLoading={isLoading} />
-    </div>
+      </div>
+    </>
   );
 };
 

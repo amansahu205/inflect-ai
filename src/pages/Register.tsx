@@ -33,7 +33,7 @@ const Register = () => {
   const validatePassword = () => {
     if (!password) setPasswordError("Password is required.");
     else if (!passwordRegex.test(password))
-      setPasswordError("Min 8 chars, 1 uppercase, 1 number.");
+      setPasswordError("Password must be 8+ chars with one number and one uppercase.");
     else setPasswordError("");
   };
 
@@ -67,7 +67,7 @@ const Register = () => {
 
     if (authError) {
       if (authError.status === 409 || authError.message?.toLowerCase().includes("already")) {
-        setError("Account already exists. Log in instead.");
+        setError("Account already exists. Log in →");
       } else {
         setError("Couldn't create account. Try again.");
       }
@@ -78,16 +78,21 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4" style={{ background: "#080C14" }}>
-      <img src={logo} alt="Inflect" className="h-12 mb-10 object-contain" />
-
+    <div className="min-h-screen flex items-center justify-center px-4" style={{ background: "#080C14" }}>
       <div
-        className="w-full max-w-md rounded-xl p-10"
+        className="w-full"
         style={{
-          background: "rgba(15,24,32,0.9)",
+          maxWidth: 420,
+          background: "#0F1820",
           border: "1px solid #1E2D40",
+          borderRadius: 12,
+          padding: 40,
         }}
       >
+        <div className="flex justify-center mb-8">
+          <img src={logo} alt="Inflect" className="h-10 object-contain" />
+        </div>
+
         <h1 className="font-display text-2xl font-bold text-foreground text-center mb-8">Create Account</h1>
 
         <form onSubmit={handleSubmit} className="space-y-5">
@@ -137,8 +142,8 @@ const Register = () => {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full h-11 rounded-lg font-semibold text-sm transition-colors disabled:opacity-50"
-            style={{ background: "#F0A500", color: "#080C14" }}
+            className="w-full h-11 font-semibold text-sm transition-colors disabled:opacity-50"
+            style={{ background: "#F0A500", color: "#080C14", borderRadius: 8 }}
           >
             {submitting ? "Creating account…" : "Create Account"}
           </button>

@@ -1,4 +1,11 @@
+import { Link } from "react-router-dom";
 import InflectLogo from "./InflectLogo";
+
+const sectionAnchors: Record<string, string> = {
+  Features: "#features",
+  Pricing: "#cta",
+  Demo: "#dashboard-preview",
+};
 
 const links = {
   Product: ["Features", "Pricing", "Demo", "API"],
@@ -11,9 +18,9 @@ const Footer = () => (
   <footer className="border-t border-border py-16 px-6" style={{ background: "#060A12" }}>
     <div className="max-w-6xl mx-auto grid md:grid-cols-6 gap-10">
       <div className="md:col-span-2">
-        <div className="mb-3">
+        <Link to="/" className="mb-3 inline-block">
           <InflectLogo size={48} />
-        </div>
+        </Link>
         <p className="text-muted-foreground text-sm">Find the inflection point.</p>
       </div>
 
@@ -21,13 +28,22 @@ const Footer = () => (
         <div key={title}>
           <p className="text-foreground text-xs font-semibold tracking-wider uppercase mb-4">{title}</p>
           <ul className="space-y-2.5">
-            {items.map((item) => (
-              <li key={item}>
-                <a href="#" className="text-muted-foreground text-sm hover:text-primary transition-colors">
-                  {item}
-                </a>
-              </li>
-            ))}
+            {items.map((item) => {
+              const anchor = sectionAnchors[item];
+              return (
+                <li key={item}>
+                  {anchor ? (
+                    <a href={anchor} className="text-muted-foreground text-sm hover:text-primary transition-colors">
+                      {item}
+                    </a>
+                  ) : (
+                    <span className="text-muted-foreground text-sm hover:text-primary transition-colors cursor-pointer">
+                      {item}
+                    </span>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         </div>
       ))}

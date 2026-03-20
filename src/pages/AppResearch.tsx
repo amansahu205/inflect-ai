@@ -84,10 +84,14 @@ const AppResearch = () => {
     [user]
   );
 
+  const handleNewMessage = useCallback((userMsg: ChatMessage, assistantMsg: ChatMessage) => {
+    setChatMessages((prev) => [...prev, userMsg, assistantMsg]);
+  }, []);
+
   return mode === "voice" ? (
     <VoiceMode mode={mode} onModeChange={handleModeChange} queries={queries} onSubmit={handleVoiceSubmit} />
   ) : (
-    <ChatMode mode={mode} onModeChange={handleModeChange} onSubmit={handleChatSubmit} />
+    <ChatMode mode={mode} onModeChange={handleModeChange} onSubmit={handleChatSubmit} messages={chatMessages} onNewMessage={handleNewMessage} />
   );
 };
 

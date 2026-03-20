@@ -37,7 +37,7 @@ const BullBear = () => {
           initial={{ opacity: 0 }}
           animate={inView ? { opacity: 1 } : {}}
           transition={{ delay: 0.3, duration: 0.6 }}
-          className="text-muted-foreground text-base md:text-lg mb-10 max-w-xl mx-auto"
+          className="text-base md:text-lg mb-10 max-w-xl mx-auto" style={{ color: "hsl(220, 14%, 78%)" }}
         >
           Fundamental + Technical + Sentiment signals synthesized into one verdict.
         </motion.p>

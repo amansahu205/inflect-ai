@@ -17,9 +17,10 @@ interface VoiceModeProps {
   queries: Array<{ id: string; transcript: string; response_text: string }>;
   onSubmit: (text: string) => Promise<VoiceSubmitResult | void>;
   onGenerateThesis: (ticker: string) => Promise<ThesisResult | null>;
+  voiceStateOverride?: "idle" | "playing" | null;
 }
 
-const VoiceMode = ({ mode, onModeChange, queries, onSubmit, onGenerateThesis }: VoiceModeProps) => {
+const VoiceMode = ({ mode, onModeChange, queries, onSubmit, onGenerateThesis, voiceStateOverride }: VoiceModeProps) => {
   const [textInput, setTextInput] = useState("");
   const [selectedOutput, setSelectedOutput] = useState<string | null>(null);
   const [answerData, setAnswerData] = useState<AnswerResult | null>(null);

@@ -5,6 +5,7 @@ import { usePortfolioStore } from "@/store/portfolioStore";
 import { supabase } from "@/integrations/supabase/client";
 import VoiceMode from "@/components/app/VoiceMode";
 import ChatMode from "@/components/app/ChatMode";
+import type { ChatMessage } from "@/components/chat/ChatThread";
 
 interface QueryRow {
   id: string;
@@ -17,6 +18,7 @@ const AppResearch = () => {
   const { mode, setMode } = useSessionStore();
   const { setBuyingPower, setTotalValue } = usePortfolioStore();
   const [queries, setQueries] = useState<QueryRow[]>([]);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
 
   useEffect(() => {
     if (!user) return;
@@ -82,10 +84,14 @@ const AppResearch = () => {
     [user]
   );
 
+  const handleNewMessage = useCallback((userMsg: ChatMessage, assistantMsg: ChatMessage) => {
+    setChatMessages((prev) => [...prev, userMsg, assistantMsg]);
+  }, []);
+
   return mode === "voice" ? (
     <VoiceMode mode={mode} onModeChange={handleModeChange} queries={queries} onSubmit={handleVoiceSubmit} />
   ) : (
-    <ChatMode mode={mode} onModeChange={handleModeChange} onSubmit={handleChatSubmit} />
+    <ChatMode mode={mode} onModeChange={handleModeChange} onSubmit={handleChatSubmit} messages={chatMessages} onNewMessage={handleNewMessage} />
   );
 };
 

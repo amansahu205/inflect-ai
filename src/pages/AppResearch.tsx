@@ -113,8 +113,14 @@ const AppResearch = () => {
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const { data } = await supabase.from("queries").select("id, transcript, response_text").eq("user_id", user.id).order("created_at", { ascending: false });
-      if (data) setQueries(data as QueryRow[]);
+      const { data } = await supabase
+        .from("queries")
+        .select("*")
+        .eq("user_id", user.id)
+        .gte("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+        .order("created_at", { ascending: false })
+        .limit(20);
+      if (data) setQueries(data as unknown as QueryRow[]);
     })();
   }, [user]);
 

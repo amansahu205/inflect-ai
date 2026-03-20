@@ -14,8 +14,6 @@ const badges = [
 ];
 
 const Hero = () => {
-  const isMobile = useIsMobile();
-
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden video-section-fade">
       {/* Video background */}

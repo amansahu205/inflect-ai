@@ -112,8 +112,9 @@ const Hero = () => {
               transition={{ delay: 1.0 + i * 0.1, duration: 0.5 }}
               className="glass text-xs px-4 py-2 rounded-full"
               style={{
-                border: "1px solid rgba(240,165,0,0.25)",
-                color: "hsl(38,100%,65%)",
+                border: "1px solid rgba(240,165,0,0.3)",
+                background: "rgba(240,165,0,0.08)",
+                color: "#F0A500",
               }}
             >
               {b.emoji} {b.label}

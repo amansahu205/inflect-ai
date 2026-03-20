@@ -174,9 +174,12 @@ const VoiceMode = ({ mode, onModeChange, queries, onSubmit, onGenerateThesis, on
           metricData={metricData}
           thesisData={thesisData}
           thesisLoading={thesisLoading}
+          chartData={chartData}
+          chartTitle={metricData?.metric || "Price"}
+          chartTicker={answerData?.ticker || undefined}
           onChipClick={handleChipClick}
           onGenerateThesis={handleGenerateThesis}
-          onPlotTrend={() => {}}
+          onPlotTrend={handlePlotTrend}
         />
       </div>
     </div>

@@ -5,17 +5,25 @@ import VoiceButton from "@/components/voice/VoiceButton";
 import type { VoiceState } from "@/components/voice/VoiceButton";
 import type { AnswerResult, StockQuote } from "@/types/api";
 
+interface VoiceSubmitResult {
+  answerData: AnswerResult;
+  stockQuote?: StockQuote | null;
+  metricData?: { metric: string; value: string; period: string; change?: string; changeDirection?: "up" | "down" } | null;
+}
+
 interface VoiceModeProps {
   mode: "voice" | "chat";
   onModeChange: (mode: "voice" | "chat") => void;
   queries: Array<{ id: string; transcript: string; response_text: string }>;
-  onSubmit: (text: string) => Promise<AnswerResult | void>;
+  onSubmit: (text: string) => Promise<VoiceSubmitResult | void>;
 }
 
 const VoiceMode = ({ mode, onModeChange, queries, onSubmit }: VoiceModeProps) => {
   const [textInput, setTextInput] = useState("");
   const [selectedOutput, setSelectedOutput] = useState<string | null>(null);
   const [answerData, setAnswerData] = useState<AnswerResult | null>(null);
+  const [stockQuote, setStockQuote] = useState<StockQuote | null>(null);
+  const [metricData, setMetricData] = useState<{ metric: string; value: string; period: string; change?: string; changeDirection?: "up" | "down" } | null>(null);
   const [voiceState, setVoiceState] = useState<VoiceState>("idle");
 
   const submitQuery = async (text: string) => {

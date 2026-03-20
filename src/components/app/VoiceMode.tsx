@@ -106,7 +106,13 @@ const VoiceMode = ({ mode, onModeChange, queries, onSubmit, onGenerateThesis, on
   }, []);
 
   return (
-    <div className="flex" style={{ height: "calc(100vh - 104px)" }}>
+    <motion.div
+      className="flex"
+      style={{ height: "calc(100vh - 104px)" }}
+      initial={{ opacity: 0, x: -12 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.2, ease: "easeInOut" }}
+    >
       {/* Left: Query History */}
       <div
         className="shrink-0"

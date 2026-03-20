@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import ModeToggle from "@/components/ui/ModeToggle";
 import OutputPanel from "./OutputPanel";
-import VoiceButton from "@/components/voice/VoiceButton";
+import HudVoiceButton from "@/components/voice/HudVoiceButton";
 import QueryHistory from "@/components/research/QueryHistory";
 import type { VoiceState } from "@/components/voice/VoiceButton";
 import type { AnswerResult, StockQuote, ThesisResult, Query } from "@/types/api";
@@ -126,7 +126,7 @@ const VoiceMode = ({ mode, onModeChange, queries, onSubmit, onGenerateThesis, on
       {/* Center: Voice area */}
       <div className="flex flex-col items-center justify-center gap-6" style={{ width: "40%" }}>
         <ModeToggle activeMode={mode} onChange={onModeChange} />
-        <VoiceButton onTranscript={handleTranscript} onStateChange={handleStateChange} disabled={false} />
+        <HudVoiceButton onTranscript={handleTranscript} onStateChange={handleStateChange} disabled={false} />
         <form onSubmit={handleTextSubmit} style={{ maxWidth: 280, width: "100%" }}>
           <input
             type="text"

@@ -19,15 +19,14 @@ const LogoStrip = () => (
       <div className="flex animate-marquee w-max">
         {[...companies, ...companies].map((domain, i) => (
           <div key={`${domain}-${i}`} className="flex items-center justify-center mx-8 shrink-0">
-            <img
-              src={`https://img.logo.dev/${domain}?token=${LOGO_TOKEN}&size=48`}
-              alt={domain.replace(".com", "")}
-              loading="lazy"
-              className="w-12 h-12 rounded-full opacity-80 hover:scale-[1.15] transition-all duration-300"
-              style={{ filter: "drop-shadow(0 0 8px rgba(255,255,255,0.3))" }}
-              onMouseEnter={(e) => { (e.target as HTMLImageElement).style.filter = "drop-shadow(0 0 12px rgba(0,200,255,0.6))"; }}
-              onMouseLeave={(e) => { (e.target as HTMLImageElement).style.filter = "drop-shadow(0 0 8px rgba(255,255,255,0.3))"; }}
-            />
+            <div className="rounded-full p-[2px] transition-all duration-300" style={{ boxShadow: "0 0 10px rgba(0,200,255,0.3), inset 0 0 10px rgba(0,200,255,0.1)" }} onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.boxShadow = "0 0 18px rgba(0,200,255,0.6), inset 0 0 12px rgba(0,200,255,0.2)"; }} onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.boxShadow = "0 0 10px rgba(0,200,255,0.3), inset 0 0 10px rgba(0,200,255,0.1)"; }}>
+              <img
+                src={`https://img.logo.dev/${domain}?token=${LOGO_TOKEN}&size=48`}
+                alt={domain.replace(".com", "")}
+                loading="lazy"
+                className="w-12 h-12 rounded-full opacity-80 hover:scale-[1.15] transition-all duration-300 ring-1 ring-primary/30"
+              />
+            </div>
           </div>
         ))}
       </div>

@@ -3,16 +3,26 @@ import { useAuthStore } from "@/store/authStore";
 import { useSessionStore } from "@/store/sessionStore";
 import { usePortfolioStore } from "@/store/portfolioStore";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 import VoiceMode from "@/components/app/VoiceMode";
 import ChatMode from "@/components/app/ChatMode";
 import type { ChatMessage } from "@/components/chat/ChatThread";
-import type { AnswerResult } from "@/types/api";
+import type { AnswerResult, ThesisResult } from "@/types/api";
 
 interface QueryRow {
   id: string;
   transcript: string;
   response_text: string;
 }
+
+const mockThesis = (ticker: string): ThesisResult => ({
+  ticker,
+  fundamental: { signal: "BULLISH", reason: "Strong revenue growth of 122% YoY driven by data center demand.", citation: `${ticker} 10-K · Filed Feb 2024` },
+  technical: { signal: "BULLISH", reason: "Price above 50-day and 200-day moving averages with strong momentum.", rsi: 62 },
+  sentiment: { signal: "POSITIVE", reason: "Overwhelmingly positive analyst coverage and institutional buying.", score: 0.87 },
+  verdict: "HOLD",
+  confidence: "HIGH",
+});
 
 const AppResearch = () => {
   const { user } = useAuthStore();
@@ -65,8 +75,6 @@ const AppResearch = () => {
     async (text: string) => {
       const responseText = `Analysis for "${text}" — placeholder. Wire up your FastAPI backend.`;
       const lowerText = text.toLowerCase();
-
-      // Simple intent detection for mock data
       const isPriceCheck = /what('s| is).*trading|price of|quote/i.test(lowerText);
       const ticker = text.match(/\b[A-Z]{1,5}\b/)?.[0] || null;
       const isMetric = /margin|revenue|earnings|eps|ratio|growth/i.test(lowerText);
@@ -81,12 +89,7 @@ const AppResearch = () => {
       };
 
       const stockQuote = isPriceCheck && ticker ? {
-        ticker,
-        price: 189.5,
-        change_percent: 2.4,
-        volume: 52_300_000,
-        direction: "up" as const,
-        timestamp: new Date().toISOString(),
+        ticker, price: 189.5, change_percent: 2.4, volume: 52_300_000, direction: "up" as const, timestamp: new Date().toISOString(),
       } : null;
 
       const metricData = isMetric ? {
@@ -121,14 +124,32 @@ const AppResearch = () => {
     [user]
   );
 
+  const handleGenerateThesis = useCallback(
+    async (ticker: string): Promise<ThesisResult | null> => {
+      try {
+        // Mock — replace with: POST ${import.meta.env.VITE_API_URL}/api/v1/thesis/generate
+        await new Promise((r) => setTimeout(r, 1500));
+        return mockThesis(ticker);
+      } catch {
+        toast({ title: "Error", description: "Couldn't generate thesis", variant: "destructive" });
+        return null;
+      }
+    },
+    []
+  );
+
   const handleNewMessage = useCallback((userMsg: ChatMessage, assistantMsg: ChatMessage) => {
     setChatMessages((prev) => [...prev, userMsg, assistantMsg]);
   }, []);
 
+  const handleUpdateMessage = useCallback((id: string, update: Partial<ChatMessage>) => {
+    setChatMessages((prev) => prev.map((m) => (m.id === id ? { ...m, ...update } : m)));
+  }, []);
+
   return mode === "voice" ? (
-    <VoiceMode mode={mode} onModeChange={handleModeChange} queries={queries} onSubmit={handleVoiceSubmit} />
+    <VoiceMode mode={mode} onModeChange={handleModeChange} queries={queries} onSubmit={handleVoiceSubmit} onGenerateThesis={handleGenerateThesis} />
   ) : (
-    <ChatMode mode={mode} onModeChange={handleModeChange} onSubmit={handleChatSubmit} messages={chatMessages} onNewMessage={handleNewMessage} />
+    <ChatMode mode={mode} onModeChange={handleModeChange} onSubmit={handleChatSubmit} messages={chatMessages} onNewMessage={handleNewMessage} onGenerateThesis={handleGenerateThesis} onUpdateMessage={handleUpdateMessage} />
   );
 };
 

@@ -4,6 +4,7 @@ import OutputPanel from "./OutputPanel";
 import ChatThread from "@/components/chat/ChatThread";
 import ChatInput from "@/components/chat/ChatInput";
 import type { ChatMessage } from "@/components/chat/ChatThread";
+import type { ThesisResult } from "@/types/api";
 
 interface ChatModeProps {
   mode: "voice" | "chat";
@@ -11,9 +12,11 @@ interface ChatModeProps {
   onSubmit: (text: string) => Promise<string>;
   messages: ChatMessage[];
   onNewMessage: (userMsg: ChatMessage, assistantMsg: ChatMessage) => void;
+  onGenerateThesis: (ticker: string) => Promise<ThesisResult | null>;
+  onUpdateMessage: (id: string, update: Partial<ChatMessage>) => void;
 }
 
-const ChatMode = ({ mode, onModeChange, onSubmit, messages, onNewMessage }: ChatModeProps) => {
+const ChatMode = ({ mode, onModeChange, onSubmit, messages, onNewMessage, onGenerateThesis, onUpdateMessage }: ChatModeProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [latestResponse, setLatestResponse] = useState<string | null>(null);
 
@@ -59,19 +62,16 @@ const ChatMode = ({ mode, onModeChange, onSubmit, messages, onNewMessage }: Chat
 
   return (
     <div className="flex flex-col" style={{ height: "calc(100vh - 104px)" }}>
-      {/* Mode toggle */}
       <div className="flex justify-end px-8 py-3 shrink-0">
         <ModeToggle activeMode={mode} onChange={onModeChange} />
       </div>
 
       <div className="flex flex-1 overflow-hidden">
-        {/* Left: Chat thread + input */}
         <div className="flex flex-col" style={{ width: "60%" }}>
           <ChatThread messages={messages} isLoading={isLoading} />
           <ChatInput onSubmit={handleSubmit} disabled={isLoading} />
         </div>
 
-        {/* Right: Output */}
         <div style={{ width: "40%", borderLeft: "1px solid #1E2D40" }}>
           <OutputPanel content={latestResponse} onChipClick={handleChipClick} />
         </div>

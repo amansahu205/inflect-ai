@@ -20,7 +20,11 @@ const VoiceShowcase = () => {
             className="rounded-2xl overflow-hidden"
             style={{ boxShadow: "0 0 80px rgba(0,200,255,0.3)" }}
           >
-            <video autoPlay muted loop playsInline className="w-full block rounded-2xl">
+            <video
+              autoPlay muted loop playsInline
+              className="w-full block rounded-2xl"
+              style={{ objectFit: "cover", objectPosition: "center top", height: "calc(100% - 40px)" }}
+            >
               <source src="/videos/voice_button.mp4" type="video/mp4" />
             </video>
           </motion.div>

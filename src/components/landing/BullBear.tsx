@@ -22,7 +22,7 @@ const BullBear = () => {
       >
         <source src="/videos/bull_bear.mp4" type="video/mp4" />
       </video>
-      <div className="absolute inset-0" style={{ background: "rgba(8,12,20,0.75)" }} />
+      <div className="absolute inset-0" style={{ background: "rgba(8,12,20,0.50)" }} />
 
       <div className="relative z-10 max-w-4xl mx-auto text-center">
         <motion.h2

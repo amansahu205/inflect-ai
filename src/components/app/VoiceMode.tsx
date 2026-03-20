@@ -22,7 +22,7 @@ interface VoiceModeProps {
   voiceStateOverride?: "idle" | "playing" | null;
 }
 
-const VoiceMode = ({ mode, onModeChange, queries, onSubmit, onGenerateThesis, voiceStateOverride }: VoiceModeProps) => {
+const VoiceMode = ({ mode, onModeChange, queries, onSubmit, onGenerateThesis, onPlotTrend, voiceStateOverride }: VoiceModeProps) => {
   const [textInput, setTextInput] = useState("");
   const [selectedOutput, setSelectedOutput] = useState<string | null>(null);
   const [answerData, setAnswerData] = useState<AnswerResult | null>(null);
@@ -30,6 +30,7 @@ const VoiceMode = ({ mode, onModeChange, queries, onSubmit, onGenerateThesis, vo
   const [metricData, setMetricData] = useState<{ metric: string; value: string; period: string; change?: string; changeDirection?: "up" | "down" } | null>(null);
   const [thesisData, setThesisData] = useState<ThesisResult | null>(null);
   const [thesisLoading, setThesisLoading] = useState(false);
+  const [chartData, setChartData] = useState<ChartData | null>(null);
   const [voiceState, setVoiceState] = useState<VoiceState>("idle");
 
   const submitQuery = async (text: string) => {

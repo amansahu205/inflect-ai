@@ -5,14 +5,14 @@ import { Mic, ShieldCheck, TrendingUp } from "lucide-react";
 const cards = [
   {
     icon: Mic,
-    iconColor: "#00C8FF",
-    accent: "hsl(193,100%,50%)",
+    iconColor: "#F0A500",
+    accent: "hsl(38,100%,47%)",
     title: "Voice & Chat",
     body: "Ask in natural language. Get cited answers in under 3 seconds.",
     badge: "ElevenLabs TTS",
-    badgeBg: "rgba(0,200,255,0.12)",
-    badgeBorder: "rgba(0,200,255,0.3)",
-    badgeColor: "hsl(193,100%,50%)",
+    badgeBg: "rgba(240,165,0,0.12)",
+    badgeBorder: "rgba(240,165,0,0.3)",
+    badgeColor: "hsl(38,100%,47%)",
   },
   {
     icon: ShieldCheck,

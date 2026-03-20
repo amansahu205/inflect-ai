@@ -180,8 +180,8 @@ const AppResearch = () => {
         response_text: result.answer,
         ticker: result.ticker,
         mode,
-      }).select("id, transcript, response_text").single();
-      if (data) setQueries((prev) => [data as QueryRow, ...prev]);
+      }).select("*").single();
+      if (data) setQueries((prev) => [data as unknown as QueryRow, ...prev]);
     }
 
     // Store answer

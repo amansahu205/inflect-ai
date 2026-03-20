@@ -3,7 +3,6 @@ import { useAuthStore } from "@/store/authStore";
 import { useSessionStore } from "@/store/sessionStore";
 import { usePortfolioStore } from "@/store/portfolioStore";
 import { supabase } from "@/integrations/supabase/client";
-import ModeToggle from "@/components/ui/ModeToggle";
 import VoiceMode from "@/components/app/VoiceMode";
 import ChatMode from "@/components/app/ChatMode";
 
@@ -19,38 +18,34 @@ const AppResearch = () => {
   const { setBuyingPower, setTotalValue } = usePortfolioStore();
   const [queries, setQueries] = useState<QueryRow[]>([]);
 
-  // Load profile + portfolio data
   useEffect(() => {
     if (!user) return;
-    const load = async () => {
-      const { data: profile } = await supabase
+    (async () => {
+      const { data } = await supabase
         .from("profiles")
         .select("buying_power, default_mode")
         .eq("id", user.id)
         .single();
-      if (profile) {
-        setBuyingPower(profile.buying_power);
-        setTotalValue(profile.buying_power);
-        if (profile.default_mode === "chat" || profile.default_mode === "voice") {
-          setMode(profile.default_mode as "voice" | "chat");
+      if (data) {
+        setBuyingPower(data.buying_power);
+        setTotalValue(data.buying_power);
+        if (data.default_mode === "chat" || data.default_mode === "voice") {
+          setMode(data.default_mode as "voice" | "chat");
         }
       }
-    };
-    load();
+    })();
   }, [user, setBuyingPower, setTotalValue, setMode]);
 
-  // Load queries
   useEffect(() => {
     if (!user) return;
-    const load = async () => {
+    (async () => {
       const { data } = await supabase
         .from("queries")
         .select("id, transcript, response_text")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
       if (data) setQueries(data as QueryRow[]);
-    };
-    load();
+    })();
   }, [user]);
 
   const handleModeChange = useCallback(
@@ -66,16 +61,10 @@ const AppResearch = () => {
   const handleVoiceSubmit = useCallback(
     async (text: string) => {
       if (!user) return;
-      const responseText = `Analysis for "${text}" — placeholder response. Wire up your FastAPI backend for real results.`;
+      const responseText = `Analysis for "${text}" — placeholder. Wire up your FastAPI backend.`;
       const { data } = await supabase
         .from("queries")
-        .insert({
-          user_id: user.id,
-          transcript: text,
-          response_text: responseText,
-          mode: "voice",
-          intent_type: "research",
-        })
+        .insert({ user_id: user.id, transcript: text, response_text: responseText, mode: "voice", intent_type: "research" })
         .select("id, transcript, response_text")
         .single();
       if (data) setQueries((prev) => [data as QueryRow, ...prev]);
@@ -86,33 +75,17 @@ const AppResearch = () => {
   const handleChatSubmit = useCallback(
     async (text: string): Promise<string> => {
       if (!user) return "Not authenticated.";
-      const responseText = `Analysis for "${text}" — placeholder response. Wire up your FastAPI backend for real results.`;
-      await supabase.from("queries").insert({
-        user_id: user.id,
-        transcript: text,
-        response_text: responseText,
-        mode: "chat",
-        intent_type: "research",
-      });
+      const responseText = `Analysis for "${text}" — placeholder. Wire up your FastAPI backend.`;
+      await supabase.from("queries").insert({ user_id: user.id, transcript: text, response_text: responseText, mode: "chat", intent_type: "research" });
       return responseText;
     },
     [user]
   );
 
-  return (
-    <div className="h-full flex flex-col" style={{ height: "calc(100vh - 56px - 48px)" }}>
-      {/* Mode toggle bar */}
-      <div className="flex items-center justify-end px-8 py-3 shrink-0">
-        <ModeToggle activeMode={mode} onChange={handleModeChange} />
-      </div>
-
-      {/* Main content */}
-      {mode === "voice" ? (
-        <VoiceMode queries={queries} onSubmit={handleVoiceSubmit} />
-      ) : (
-        <ChatMode onSubmit={handleChatSubmit} />
-      )}
-    </div>
+  return mode === "voice" ? (
+    <VoiceMode mode={mode} onModeChange={handleModeChange} queries={queries} onSubmit={handleVoiceSubmit} />
+  ) : (
+    <ChatMode mode={mode} onModeChange={handleModeChange} onSubmit={handleChatSubmit} />
   );
 };
 

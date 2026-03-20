@@ -1,39 +1,36 @@
+import { EXAMPLE_QUERIES } from "@/utils/constants";
+
 interface OutputPanelProps {
   content: string | null;
   onChipClick: (text: string) => void;
 }
 
-const exampleChips = [
-  "What was Apple's gross margin Q4 2023?",
-  "Should I hold Nvidia?",
-  "What's Tesla trading at?",
-];
-
 const OutputPanel = ({ content, onChipClick }: OutputPanelProps) => (
-  <div className="h-full flex flex-col overflow-hidden">
+  <div className="h-full flex flex-col overflow-y-auto" style={{ padding: 24 }}>
     {content ? (
-      <div className="flex-1 overflow-y-auto p-5">
-        <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">{content}</p>
-      </div>
+      <p style={{ color: "#FFFFFF", fontSize: 14, lineHeight: 1.7, whiteSpace: "pre-wrap" }}>{content}</p>
     ) : (
-      <div className="flex-1 flex flex-col items-center justify-center gap-5 px-6">
-        <p className="text-sm text-muted-foreground text-center">
-          Ask a question to see results
-        </p>
-        <div className="flex flex-wrap gap-2 justify-center">
-          {exampleChips.map((chip) => (
+      <div className="flex-1 flex flex-col items-center justify-center">
+        <p style={{ color: "#8892A4", fontSize: 14, marginBottom: 24 }}>Ask a question to see results</p>
+        <div className="flex flex-col gap-2">
+          {EXAMPLE_QUERIES.slice(0, 3).map((q) => (
             <button
-              key={chip}
-              onClick={() => onChipClick(chip)}
-              className="text-xs px-4 py-2 rounded-full transition-colors hover:bg-primary/10"
+              key={q}
+              onClick={() => onChipClick(q)}
+              className="text-left transition-colors duration-150"
               style={{
                 border: "1px solid rgba(240,165,0,0.3)",
                 background: "rgba(240,165,0,0.05)",
-                color: "#F0A500",
+                borderRadius: 20,
+                padding: "8px 16px",
                 fontSize: 13,
+                color: "#F0A500",
+                cursor: "pointer",
               }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(240,165,0,0.1)")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(240,165,0,0.05)")}
             >
-              {chip}
+              {q}
             </button>
           ))}
         </div>

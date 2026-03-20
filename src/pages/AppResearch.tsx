@@ -11,6 +11,7 @@ import { executeTrade as executeTradeApi } from "@/api/trades";
 import VoiceMode from "@/components/app/VoiceMode";
 import ChatMode from "@/components/app/ChatMode";
 import TradeModal from "@/components/trading/TradeModal";
+import AmbientCanvas from "@/components/app/AmbientCanvas";
 import type { ChatMessage } from "@/components/chat/ChatThread";
 import type { AnswerResult, ThesisResult, TradeOrder, StockQuote, Query } from "@/types/api";
 import type { AnalyzeResult } from "@/api/query";
@@ -344,6 +345,8 @@ const AppResearch = () => {
 
   return (
     <>
+      <AmbientCanvas />
+      <div className="relative z-[1]">
       {mode === "voice" ? (
         <VoiceMode
           mode={mode}
@@ -358,6 +361,7 @@ const AppResearch = () => {
       ) : (
         <ChatMode mode={mode} onModeChange={handleModeChange} onSubmit={handleChatSubmit} messages={chatMessages} onNewMessage={handleNewMessage} onGenerateThesis={handleGenerateThesis} onUpdateMessage={handleUpdateMessage} />
       )}
+      </div>
       <TradeModal order={pendingOrder} onConfirm={handleTradeConfirm} onCancel={handleTradeCancel} isLoading={tradeLoading} fillResult={fillResult} />
     </>
   );

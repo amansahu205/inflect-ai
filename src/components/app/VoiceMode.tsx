@@ -141,6 +141,8 @@ const VoiceMode = ({ mode, onModeChange, queries, onSubmit }: VoiceModeProps) =>
         <OutputPanel
           content={selectedOutput}
           answerData={answerData}
+          stockQuote={stockQuote}
+          metricData={metricData}
           onChipClick={handleChipClick}
           onGenerateThesis={() => {}}
           onPlotTrend={() => {}}

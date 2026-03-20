@@ -166,7 +166,7 @@ const VoiceMode = ({ mode, onModeChange, queries, onSubmit, onGenerateThesis, on
           onPlotTrend={handlePlotTrend}
         />
       </div>
-    </div>
+    </motion.div>
   );
 };
 

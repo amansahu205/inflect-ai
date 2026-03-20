@@ -5,31 +5,20 @@ const VoiceShowcase = () => {
   const [ref, inView] = useInView({ triggerOnce: true, rootMargin: "-100px" });
 
   return (
-    <section className="py-24 px-6" ref={ref}>
-      <div className="max-w-4xl mx-auto text-center">
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8 }}
-          className="relative mx-auto mb-8"
-          style={{ maxWidth: 960 }}
-        >
-          <motion.div
-            animate={{ scale: [1, 1.02, 1] }}
-            transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
-            className="rounded-2xl overflow-hidden"
-            style={{ boxShadow: "0 0 80px rgba(240,165,0,0.3)", marginBottom: -40 }}
-          >
-            <video
-              autoPlay muted loop playsInline
-              className="w-full block"
-              style={{ marginBottom: -40 }}
-            >
-              <source src="/videos/voice_showcase.mp4" type="video/mp4" />
-            </video>
-          </motion.div>
-        </motion.div>
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden video-section-fade" ref={ref}>
+      {/* Full-screen background video */}
+      <video
+        autoPlay muted loop playsInline
+        className="absolute inset-0 w-full h-full object-cover"
+      >
+        <source src="/videos/voice_showcase.mp4" type="video/mp4" />
+      </video>
 
+      {/* Overlay */}
+      <div className="absolute inset-0 bg-background/50" />
+
+      {/* Content */}
+      <div className="relative z-10 text-center px-6">
         <motion.p
           initial={{ opacity: 0 }}
           animate={inView ? { opacity: 1 } : {}}

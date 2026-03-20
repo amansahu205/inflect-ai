@@ -70,15 +70,8 @@ const Features = () => {
               }}
               className="glass rounded-2xl border border-border p-8 transition-colors"
             >
-              <div className="w-16 h-16 mb-6">
-                {inView && (
-                  <Player
-                    autoplay
-                    loop
-                    src={card.lottie}
-                    style={{ width: 64, height: 64 }}
-                  />
-                )}
+              <div className="w-16 h-16 mb-6 flex items-center justify-center">
+                <card.icon size={40} color={card.iconColor} />
               </div>
               <h3 className="font-display font-semibold text-foreground text-xl mb-3">{card.title}</h3>
               <p className="text-muted-foreground text-sm leading-relaxed mb-5">{card.body}</p>

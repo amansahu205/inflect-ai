@@ -60,9 +60,7 @@ const HowItWorks = () => {
               className="text-center relative z-10"
             >
               <div className="w-16 h-16 mx-auto mb-6 rounded-2xl glass border border-border flex items-center justify-center">
-                {inView && (
-                  <Player autoplay loop src={step.lottie} style={{ width: 40, height: 40 }} />
-                )}
+                <step.icon size={40} color={step.iconColor} />
               </div>
               <h3 className="font-display font-semibold text-foreground text-lg mb-2">{step.title}</h3>
               <p className="text-muted-foreground text-sm">{step.desc}</p>

@@ -34,7 +34,7 @@ const VoiceShowcase = () => {
           initial={{ opacity: 0 }}
           animate={inView ? { opacity: 1 } : {}}
           transition={{ delay: 0.3, duration: 0.6 }}
-          className="text-primary text-xs tracking-[0.2em] uppercase mb-3"
+          className="text-xs tracking-[0.2em] uppercase mb-3" style={{ color: "#F0A500" }}
         >
           Inflect Listens
         </motion.p>

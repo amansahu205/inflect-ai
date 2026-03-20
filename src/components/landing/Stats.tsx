@@ -32,9 +32,9 @@ function useCountUp(target: string, inView: boolean) {
 }
 
 const stats = [
-  { value: "<3s", accent: "hsl(38,100%,47%)", label: "Average response time" },
-  { value: "540K+", accent: "hsl(38,100%,47%)", label: "SEC filing chunks indexed" },
-  { value: "$0", accent: "hsl(0,68%,61%)", label: "Hallucinated numbers. Ever." },
+  { value: "<3s", accent: "#F0A500", label: "Average response time" },
+  { value: "540K+", accent: "#F0A500", label: "SEC filing chunks indexed" },
+  { value: "$0", accent: "#E05555", label: "Hallucinated numbers. Ever." },
 ];
 
 const Stats = () => {

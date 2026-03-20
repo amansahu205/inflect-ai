@@ -130,7 +130,7 @@ const Hero = () => {
         transition={{ delay: 1.4 }}
         className="absolute bottom-8 left-1/2 -translate-x-1/2"
       >
-        <ChevronDown className="w-6 h-6 animate-bounce-slow" style={{ color: "hsl(38,100%,47%)" }} />
+        <ChevronDown className="w-6 h-6 animate-bounce-slow" style={{ color: "#F0A500" }} />
       </motion.div>
     </section>
   );

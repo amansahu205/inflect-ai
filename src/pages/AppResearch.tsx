@@ -345,6 +345,8 @@ const AppResearch = () => {
 
   return (
     <>
+      <AmbientCanvas />
+      <div className="relative z-[1]">
       {mode === "voice" ? (
         <VoiceMode
           mode={mode}

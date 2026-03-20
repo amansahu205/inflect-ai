@@ -22,10 +22,13 @@ const Navbar = () => {
       initial={{ y: -80, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
-      className="fixed top-0 left-0 right-0 z-50 glass-nav"
+      className="fixed top-0 left-0 right-0 z-50"
       style={{
-        borderBottom: `1px solid rgba(240,165,0,${scrolled ? 0.3 : 0.1})`,
-        transition: "border-color 0.3s ease",
+        background: "rgba(8,12,20,0.92)",
+        backdropFilter: "blur(16px)",
+        WebkitBackdropFilter: "blur(16px)",
+        borderBottom: `1px solid rgba(240,165,0,${scrolled ? 0.4 : 0.15})`,
+        transition: "border-color 0.3s ease, background 0.3s ease",
       }}
     >
       <div className="w-full px-8 h-20 flex items-center justify-between">

@@ -12,14 +12,10 @@ import VoiceMode from "@/components/app/VoiceMode";
 import ChatMode from "@/components/app/ChatMode";
 import TradeModal from "@/components/trading/TradeModal";
 import type { ChatMessage } from "@/components/chat/ChatThread";
-import type { AnswerResult, ThesisResult, TradeOrder, StockQuote } from "@/types/api";
+import type { AnswerResult, ThesisResult, TradeOrder, StockQuote, Query } from "@/types/api";
 import type { AnalyzeResult } from "@/api/query";
 
-interface QueryRow {
-  id: string;
-  transcript: string;
-  response_text: string;
-}
+type QueryRow = Query;
 
 // Whether the FastAPI backend is available
 const USE_BACKEND = !!import.meta.env.VITE_API_URL;
@@ -117,8 +113,14 @@ const AppResearch = () => {
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const { data } = await supabase.from("queries").select("id, transcript, response_text").eq("user_id", user.id).order("created_at", { ascending: false });
-      if (data) setQueries(data as QueryRow[]);
+      const { data } = await supabase
+        .from("queries")
+        .select("*")
+        .eq("user_id", user.id)
+        .gte("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+        .order("created_at", { ascending: false })
+        .limit(20);
+      if (data) setQueries(data as unknown as QueryRow[]);
     })();
   }, [user]);
 
@@ -178,8 +180,8 @@ const AppResearch = () => {
         response_text: result.answer,
         ticker: result.ticker,
         mode,
-      }).select("id, transcript, response_text").single();
-      if (data) setQueries((prev) => [data as QueryRow, ...prev]);
+      }).select("*").single();
+      if (data) setQueries((prev) => [data as unknown as QueryRow, ...prev]);
     }
 
     // Store answer
@@ -327,6 +329,11 @@ const AppResearch = () => {
 
   const handleTradeCancel = useCallback(() => { setPendingOrder(null); setTradeLoading(false); setFillResult(null); }, []);
 
+  const handleClearQueries = useCallback(() => {
+    setQueries([]);
+    useSessionStore.getState().clearSession();
+  }, []);
+
   const handleNewMessage = useCallback((userMsg: ChatMessage, assistantMsg: ChatMessage) => {
     setChatMessages((prev) => [...prev, userMsg, assistantMsg]);
   }, []);
@@ -345,6 +352,7 @@ const AppResearch = () => {
           onSubmit={handleVoiceSubmit}
           onGenerateThesis={handleGenerateThesis}
           onPlotTrend={handlePlotTrend}
+          onClearQueries={handleClearQueries}
           voiceStateOverride={voiceStateOverride}
         />
       ) : (

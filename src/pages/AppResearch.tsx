@@ -1,16 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { useAuthStore } from "@/store/authStore";
+import { useSessionStore } from "@/store/sessionStore";
+import { usePortfolioStore } from "@/store/portfolioStore";
 import { supabase } from "@/integrations/supabase/client";
-import AppNavbar from "@/components/app/AppNavbar";
-import BottomBar from "@/components/app/BottomBar";
-import ModeToggle from "@/components/app/ModeToggle";
+import ModeToggle from "@/components/ui/ModeToggle";
 import VoiceMode from "@/components/app/VoiceMode";
 import ChatMode from "@/components/app/ChatMode";
-
-interface Profile {
-  buying_power: number;
-  default_mode: string;
-}
 
 interface QueryRow {
   id: string;
@@ -20,28 +15,29 @@ interface QueryRow {
 
 const AppResearch = () => {
   const { user } = useAuthStore();
-  const [mode, setMode] = useState<"voice" | "chat">("voice");
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const { mode, setMode } = useSessionStore();
+  const { setBuyingPower, setTotalValue } = usePortfolioStore();
   const [queries, setQueries] = useState<QueryRow[]>([]);
 
-  // Load profile
+  // Load profile + portfolio data
   useEffect(() => {
     if (!user) return;
     const load = async () => {
-      const { data } = await supabase
+      const { data: profile } = await supabase
         .from("profiles")
         .select("buying_power, default_mode")
         .eq("id", user.id)
         .single();
-      if (data) {
-        setProfile(data);
-        if (data.default_mode === "chat" || data.default_mode === "voice") {
-          setMode(data.default_mode as "voice" | "chat");
+      if (profile) {
+        setBuyingPower(profile.buying_power);
+        setTotalValue(profile.buying_power);
+        if (profile.default_mode === "chat" || profile.default_mode === "voice") {
+          setMode(profile.default_mode as "voice" | "chat");
         }
       }
     };
     load();
-  }, [user]);
+  }, [user, setBuyingPower, setTotalValue, setMode]);
 
   // Load queries
   useEffect(() => {
@@ -64,14 +60,13 @@ const AppResearch = () => {
         await supabase.from("profiles").update({ default_mode: newMode }).eq("id", user.id);
       }
     },
-    [user]
+    [user, setMode]
   );
 
   const handleVoiceSubmit = useCallback(
     async (text: string) => {
       if (!user) return;
-      // Placeholder: in real app this would call an AI edge function
-      const responseText = `Analysis for "${text}" — this is a placeholder response. Wire up your AI backend to get real results.`;
+      const responseText = `Analysis for "${text}" — placeholder response. Wire up your FastAPI backend for real results.`;
       const { data } = await supabase
         .from("queries")
         .insert({
@@ -91,7 +86,7 @@ const AppResearch = () => {
   const handleChatSubmit = useCallback(
     async (text: string): Promise<string> => {
       if (!user) return "Not authenticated.";
-      const responseText = `Analysis for "${text}" — this is a placeholder response. Wire up your AI backend to get real results.`;
+      const responseText = `Analysis for "${text}" — placeholder response. Wire up your FastAPI backend for real results.`;
       await supabase.from("queries").insert({
         user_id: user.id,
         transcript: text,
@@ -104,15 +99,11 @@ const AppResearch = () => {
     [user]
   );
 
-  const buyingPower = profile?.buying_power ?? 100000;
-
   return (
-    <div className="h-screen flex flex-col" style={{ background: "#080C14" }}>
-      <AppNavbar />
-
+    <div className="h-full flex flex-col" style={{ height: "calc(100vh - 56px - 48px)" }}>
       {/* Mode toggle bar */}
       <div className="flex items-center justify-end px-8 py-3 shrink-0">
-        <ModeToggle mode={mode} onChange={handleModeChange} />
+        <ModeToggle activeMode={mode} onChange={handleModeChange} />
       </div>
 
       {/* Main content */}
@@ -121,8 +112,6 @@ const AppResearch = () => {
       ) : (
         <ChatMode onSubmit={handleChatSubmit} />
       )}
-
-      <BottomBar portfolioValue={buyingPower} buyingPower={buyingPower} />
     </div>
   );
 };

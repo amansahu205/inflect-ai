@@ -1,7 +1,7 @@
 import logo from "@/assets/inflect-logo.png";
 
-const InflectLogo = ({ size = 36, className = "" }: { size?: number; className?: string }) => (
-  <a href="#" className={`flex items-center ${className}`}>
+const InflectLogo = ({ size = 48, className = "" }: { size?: number; className?: string }) => (
+  <a href="#" className={`flex items-center gap-3 ${className}`}>
     <img
       src={logo}
       alt="Inflect"

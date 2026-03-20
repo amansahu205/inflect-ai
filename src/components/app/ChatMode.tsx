@@ -83,7 +83,7 @@ const ChatMode = ({ mode, onModeChange, onSubmit, messages, onNewMessage, onGene
           <OutputPanel content={latestResponse} onChipClick={handleChipClick} />
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

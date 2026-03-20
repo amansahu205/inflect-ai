@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import InflectLogo from "./InflectLogo";
 
 const navLinks = [
@@ -32,7 +33,9 @@ const Navbar = () => {
       }}
     >
       <div className="w-full px-8 h-20 flex items-center justify-between">
-        <InflectLogo size={52} />
+        <Link to="/">
+          <InflectLogo size={52} />
+        </Link>
 
         <div className="hidden md:flex items-center gap-8">
           {navLinks.map((l) => (
@@ -44,14 +47,23 @@ const Navbar = () => {
               {l.label}
             </a>
           ))}
-          <motion.a
-            href="#cta"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.97 }}
-            className="bg-primary text-primary-foreground text-sm font-semibold px-5 py-2 rounded-full"
+          <Link
+            to="/login"
+            className="text-sm transition-colors duration-200"
+            style={{ color: "#8892A4", fontSize: 14 }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = "#FFFFFF"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = "#8892A4"; }}
           >
-            Start Demo
-          </motion.a>
+            Log In
+          </Link>
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
+            <Link
+              to="/register"
+              className="bg-primary text-primary-foreground text-sm font-semibold px-5 py-2 rounded-full"
+            >
+              Start Demo
+            </Link>
+          </motion.div>
         </div>
       </div>
     </motion.nav>

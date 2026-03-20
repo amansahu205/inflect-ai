@@ -1,4 +1,4 @@
-import { Zap } from "lucide-react";
+import InflectLogo from "./InflectLogo";
 
 const links = {
   Product: ["Features", "Pricing", "Demo", "API"],
@@ -11,9 +11,8 @@ const Footer = () => (
   <footer className="border-t border-border py-16 px-6" style={{ background: "#060A12" }}>
     <div className="max-w-6xl mx-auto grid md:grid-cols-6 gap-10">
       <div className="md:col-span-2">
-        <div className="flex items-center gap-2 mb-3">
-          <Zap className="w-4 h-4 text-primary" fill="currentColor" />
-          <span className="text-foreground font-bold text-sm">INFLECT</span>
+        <div className="mb-3">
+          <InflectLogo size={28} />
         </div>
         <p className="text-muted-foreground text-sm">Find the inflection point.</p>
       </div>

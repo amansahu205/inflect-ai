@@ -71,7 +71,7 @@ const Login = () => {
           <img src={logo} alt="Inflect" style={{ height: 40 }} className="object-contain" />
         </div>
 
-        <div style={{ background: "#0F1820", border: "1px solid #1E2D40", borderRadius: 12, padding: 40, boxShadow: "0 0 40px rgba(240,165,0,0.15)" }}>
+        <div style={{ background: "#0F1820", border: "1px solid rgba(240,165,0,0.2)", borderRadius: 12, padding: 40, boxShadow: "0 0 0 1px rgba(240,165,0,0.2), 0 24px 80px rgba(0,0,0,0.6), 0 0 120px rgba(240,165,0,0.05)" }}>
           <h1 className="font-display text-xl font-bold text-foreground text-center mb-8">Welcome back</h1>
 
           <form onSubmit={handleSubmit} className="space-y-5">

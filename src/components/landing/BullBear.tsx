@@ -2,9 +2,9 @@ import { motion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 
 const verdicts = [
-  { label: "✓ HOLD", color: "rgba(0,214,143,0.15)", border: "rgba(0,214,143,0.4)", text: "hsl(157,100%,42%)" },
-  { label: "👁 WATCH", color: "rgba(240,165,0,0.15)", border: "rgba(240,165,0,0.4)", text: "hsl(38,100%,47%)" },
-  { label: "⚠ AVOID", color: "rgba(224,85,85,0.15)", border: "rgba(224,85,85,0.4)", text: "hsl(0,68%,61%)" },
+  { label: "✓ HOLD", color: "rgba(0,214,143,0.25)", border: "rgba(0,214,143,0.6)", text: "#00D68F" },
+  { label: "👁 WATCH", color: "rgba(240,165,0,0.25)", border: "rgba(240,165,0,0.6)", text: "#F0A500" },
+  { label: "⚠ AVOID", color: "rgba(224,85,85,0.25)", border: "rgba(224,85,85,0.6)", text: "#E05555" },
 ];
 
 const BullBear = () => {
@@ -37,7 +37,7 @@ const BullBear = () => {
           initial={{ opacity: 0 }}
           animate={inView ? { opacity: 1 } : {}}
           transition={{ delay: 0.3, duration: 0.6 }}
-          className="text-muted-foreground text-base md:text-lg mb-10 max-w-xl mx-auto"
+          className="text-base md:text-lg mb-10 max-w-xl mx-auto" style={{ color: "hsl(220, 14%, 78%)" }}
         >
           Fundamental + Technical + Sentiment signals synthesized into one verdict.
         </motion.p>

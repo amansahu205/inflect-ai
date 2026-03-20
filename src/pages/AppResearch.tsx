@@ -5,6 +5,7 @@ import { usePortfolioStore } from "@/store/portfolioStore";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { analyzeQuery } from "@/api/query";
+import { getChartData } from "@/api/chart";
 import { getQuote } from "@/api/market";
 import { executeTrade as executeTradeApi } from "@/api/trades";
 import VoiceMode from "@/components/app/VoiceMode";

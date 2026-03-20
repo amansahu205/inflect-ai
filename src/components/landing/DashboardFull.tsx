@@ -13,7 +13,7 @@ const DashboardFull = () => {
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="rounded-2xl overflow-hidden"
           style={{
-            border: "1px solid rgba(0,200,255,0.15)",
+            border: "1px solid rgba(240,165,0,0.15)",
           }}
         >
           <video autoPlay muted loop playsInline className="w-full block">

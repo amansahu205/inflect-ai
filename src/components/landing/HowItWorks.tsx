@@ -5,19 +5,19 @@ import { Mic, ShieldCheck, TrendingUp } from "lucide-react";
 const steps = [
   {
     icon: Mic,
-    iconColor: "#00C8FF",
+    iconColor: "#F0A500",
     title: "Speak or Type",
     desc: "Ask about any Fortune 500 in plain English",
   },
   {
     icon: ShieldCheck,
-    iconColor: "#00D68F",
+    iconColor: "#F0A500",
     title: "AI Verifies",
     desc: "SEC filings + Wolfram|Alpha check every single claim",
   },
   {
     icon: TrendingUp,
-    iconColor: "#00D68F",
+    iconColor: "#E05555",
     title: "Get Answers",
     desc: "Cited answer + interactive chart in under 3 seconds",
   },
@@ -48,7 +48,7 @@ const HowItWorks = () => {
             animate={inView ? { scaleX: 1 } : {}}
             transition={{ duration: 1.2, delay: 0.3, ease: "easeOut" }}
             className="hidden md:block absolute top-12 left-[16%] right-[16%] h-0 origin-left"
-            style={{ borderTop: "2px dashed rgba(0,200,255,0.3)" }}
+            style={{ borderTop: "2px dashed rgba(240,165,0,0.3)" }}
           />
 
           {steps.map((step, i) => (

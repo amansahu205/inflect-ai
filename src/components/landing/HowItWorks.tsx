@@ -1,25 +1,25 @@
 import { motion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
-import { Player } from "@lottiefiles/react-lottie-player";
+import { Mic, ShieldCheck, TrendingUp } from "lucide-react";
 
 const steps = [
   {
-    lottie: "https://lottie.host/1e8ce44d-0e5f-4f47-99e8-e29c4e1e305e/bWxhN0dHHQ.json",
+    icon: Mic,
+    iconColor: "#00C8FF",
     title: "Speak or Type",
     desc: "Ask about any Fortune 500 in plain English",
-    accent: "hsl(193,100%,50%)",
   },
   {
-    lottie: "https://lottie.host/f3e7c5aa-20fd-437f-97c5-3c3e30dcbe68/XNELXsaI8f.json",
+    icon: ShieldCheck,
+    iconColor: "#00D68F",
     title: "AI Verifies",
     desc: "SEC filings + Wolfram|Alpha check every single claim",
-    accent: "hsl(157,100%,42%)",
   },
   {
-    lottie: "https://lottie.host/04476a84-4e7a-483a-902c-53f0c4027e13/f6K8vmQ9sM.json",
+    icon: TrendingUp,
+    iconColor: "#00D68F",
     title: "Get Answers",
     desc: "Cited answer + interactive chart in under 3 seconds",
-    accent: "hsl(193,100%,50%)",
   },
 ];
 
@@ -60,9 +60,7 @@ const HowItWorks = () => {
               className="text-center relative z-10"
             >
               <div className="w-16 h-16 mx-auto mb-6 rounded-2xl glass border border-border flex items-center justify-center">
-                {inView && (
-                  <Player autoplay loop src={step.lottie} style={{ width: 40, height: 40 }} />
-                )}
+                <step.icon size={40} color={step.iconColor} />
               </div>
               <h3 className="font-display font-semibold text-foreground text-lg mb-2">{step.title}</h3>
               <p className="text-muted-foreground text-sm">{step.desc}</p>

@@ -1,10 +1,11 @@
 import { motion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
-import { Player } from "@lottiefiles/react-lottie-player";
+import { Mic, ShieldCheck, TrendingUp } from "lucide-react";
 
 const cards = [
   {
-    lottie: "https://lottie.host/1e8ce44d-0e5f-4f47-99e8-e29c4e1e305e/bWxhN0dHHQ.json",
+    icon: Mic,
+    iconColor: "#00C8FF",
     accent: "hsl(193,100%,50%)",
     title: "Voice & Chat",
     body: "Ask in natural language. Get cited answers in under 3 seconds.",
@@ -14,7 +15,8 @@ const cards = [
     badgeColor: "hsl(193,100%,50%)",
   },
   {
-    lottie: "https://lottie.host/f3e7c5aa-20fd-437f-97c5-3c3e30dcbe68/XNELXsaI8f.json",
+    icon: ShieldCheck,
+    iconColor: "#00D68F",
     accent: "hsl(157,100%,42%)",
     title: "Zero Hallucination",
     body: "Every claim verified by SEC filings or Wolfram|Alpha. We always cite sources.",
@@ -24,7 +26,8 @@ const cards = [
     badgeColor: "hsl(157,100%,42%)",
   },
   {
-    lottie: "https://lottie.host/04476a84-4e7a-483a-902c-53f0c4027e13/f6K8vmQ9sM.json",
+    icon: TrendingUp,
+    iconColor: "#E05555",
     accent: "hsl(0,68%,61%)",
     title: "Paper Trading",
     body: "Execute simulated trades with $100K virtual portfolio. Zero real risk.",
@@ -67,15 +70,8 @@ const Features = () => {
               }}
               className="glass rounded-2xl border border-border p-8 transition-colors"
             >
-              <div className="w-16 h-16 mb-6">
-                {inView && (
-                  <Player
-                    autoplay
-                    loop
-                    src={card.lottie}
-                    style={{ width: 64, height: 64 }}
-                  />
-                )}
+              <div className="w-16 h-16 mb-6 flex items-center justify-center">
+                <card.icon size={40} color={card.iconColor} />
               </div>
               <h3 className="font-display font-semibold text-foreground text-xl mb-3">{card.title}</h3>
               <p className="text-muted-foreground text-sm leading-relaxed mb-5">{card.body}</p>

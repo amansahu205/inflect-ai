@@ -279,6 +279,16 @@ const AppResearch = () => {
     }
   }, []);
 
+  // --- Plot trend ---
+  const handlePlotTrend = useCallback(async (ticker: string, metric: string | null) => {
+    try {
+      return await getChartData(ticker, metric, null);
+    } catch {
+      toast({ title: "Error", description: "Couldn't load chart data", variant: "destructive" });
+      return null;
+    }
+  }, []);
+
   // --- Trade execution ---
   const handleTradeConfirm = useCallback(async () => {
     if (!pendingOrder || !user) return;

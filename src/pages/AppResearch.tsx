@@ -361,6 +361,7 @@ const AppResearch = () => {
       ) : (
         <ChatMode mode={mode} onModeChange={handleModeChange} onSubmit={handleChatSubmit} messages={chatMessages} onNewMessage={handleNewMessage} onGenerateThesis={handleGenerateThesis} onUpdateMessage={handleUpdateMessage} />
       )}
+      </div>
       <TradeModal order={pendingOrder} onConfirm={handleTradeConfirm} onCancel={handleTradeCancel} isLoading={tradeLoading} fillResult={fillResult} />
     </>
   );

@@ -5,7 +5,7 @@ import { Mic, ShieldCheck, TrendingUp } from "lucide-react";
 const steps = [
   {
     icon: Mic,
-    iconColor: "#00C8FF",
+    iconColor: "#F0A500",
     title: "Speak or Type",
     desc: "Ask about any Fortune 500 in plain English",
   },

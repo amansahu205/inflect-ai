@@ -14,7 +14,162 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      positions: {
+        Row: {
+          avg_cost_basis: number
+          created_at: string
+          id: string
+          quantity: number
+          ticker: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avg_cost_basis: number
+          created_at?: string
+          id?: string
+          quantity: number
+          ticker: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avg_cost_basis?: number
+          created_at?: string
+          id?: string
+          quantity?: number
+          ticker?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "positions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          buying_power: number
+          created_at: string
+          default_mode: string
+          display_name: string | null
+          email: string | null
+          id: string
+          queries_today: number
+        }
+        Insert: {
+          buying_power?: number
+          created_at?: string
+          default_mode?: string
+          display_name?: string | null
+          email?: string | null
+          id: string
+          queries_today?: number
+        }
+        Update: {
+          buying_power?: number
+          created_at?: string
+          default_mode?: string
+          display_name?: string | null
+          email?: string | null
+          id?: string
+          queries_today?: number
+        }
+        Relationships: []
+      }
+      queries: {
+        Row: {
+          created_at: string
+          id: string
+          intent_type: string | null
+          mode: string
+          response_text: string | null
+          session_id: string | null
+          ticker: string | null
+          transcript: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          intent_type?: string | null
+          mode: string
+          response_text?: string | null
+          session_id?: string | null
+          ticker?: string | null
+          transcript?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          intent_type?: string | null
+          mode?: string
+          response_text?: string | null
+          session_id?: string | null
+          ticker?: string | null
+          transcript?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "queries_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trades: {
+        Row: {
+          created_at: string
+          fill_price: number
+          id: string
+          quantity: number
+          side: string
+          status: string
+          ticker: string
+          total_value: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          fill_price: number
+          id?: string
+          quantity: number
+          side: string
+          status?: string
+          ticker: string
+          total_value: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          fill_price?: number
+          id?: string
+          quantity?: number
+          side?: string
+          status?: string
+          ticker?: string
+          total_value?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trades_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

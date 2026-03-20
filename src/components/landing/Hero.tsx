@@ -1,9 +1,5 @@
-import { lazy, Suspense } from "react";
 import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
-import { useIsMobile } from "@/hooks/use-mobile";
-
-const ParticleCanvas = lazy(() => import("./ParticleCanvas"));
 
 const fadeIn = (delay: number) => ({
   initial: { opacity: 0, y: 30 },
@@ -18,24 +14,18 @@ const badges = [
 ];
 
 const Hero = () => {
-  const isMobile = useIsMobile();
-
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Three.js or gradient bg */}
-      {!isMobile ? (
-        <Suspense fallback={null}>
-          <ParticleCanvas />
-        </Suspense>
-      ) : (
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              "radial-gradient(ellipse at 30% 50%, rgba(0,214,143,0.08) 0%, transparent 50%), radial-gradient(ellipse at 70% 50%, rgba(224,85,85,0.08) 0%, transparent 50%), hsl(216,45%,5%)",
-          }}
-        />
-      )}
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden video-section-fade">
+      {/* Video background */}
+      <video
+        autoPlay
+        muted
+        loop
+        playsInline
+        className="absolute inset-0 w-full h-full object-cover"
+      >
+        <source src="/videos/bull_bear.mp4" type="video/mp4" />
+      </video>
 
       {/* Dark overlay */}
       <div className="absolute inset-0 bg-background/40" />

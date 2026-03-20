@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react";
 import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const ParticleCanvas = lazy(() => import("./ParticleCanvas"));
@@ -22,21 +23,11 @@ const Hero = () => {
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden video-section-fade">
-      {/* Video background */}
-      <video
-        autoPlay
-        muted
-        loop
-        playsInline
-        className="absolute inset-0 w-full h-full object-cover"
-      >
+      <video autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover">
         <source src="/videos/hero_bg.mp4" type="video/mp4" />
       </video>
-
-      {/* Dark overlay */}
       <div className="absolute inset-0 bg-background/40" />
 
-      {/* Content */}
       <div className="relative z-10 text-center px-6 max-w-4xl mx-auto pt-20">
         <motion.div {...fadeIn(0.2)} className="inline-block mb-6">
           <span
@@ -74,36 +65,27 @@ const Hero = () => {
         </motion.p>
 
         <motion.div {...fadeIn(0.8)} className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-          <motion.a
-            href="#cta"
-            whileHover={{ scale: 1.05, boxShadow: "0 0 30px rgba(240,165,0,0.4)", background: "#B87800" }}
-            whileTap={{ scale: 0.97 }}
-            className="font-semibold px-8 py-3 rounded-full text-sm"
-            style={{
-              background: "#F0A500",
-              color: "#080C14",
-            }}
-          >
-            Start Demo
-          </motion.a>
+          <motion.div whileHover={{ scale: 1.05, boxShadow: "0 0 30px rgba(240,165,0,0.4)" }} whileTap={{ scale: 0.97 }}>
+            <Link
+              to="/register"
+              className="font-semibold px-8 py-3 rounded-full text-sm inline-block"
+              style={{ background: "#F0A500", color: "#080C14" }}
+            >
+              Start Demo
+            </Link>
+          </motion.div>
           <motion.a
             href="#dashboard-preview"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.97 }}
             className="font-semibold px-8 py-3 rounded-full text-sm"
-            style={{
-              border: "1px solid #F0A500",
-              color: "#F0A500",
-            }}
+            style={{ border: "1px solid #F0A500", color: "#F0A500" }}
           >
             Watch It Work
           </motion.a>
         </motion.div>
 
-        <motion.div
-          {...fadeIn(1.0)}
-          className="flex flex-wrap justify-center gap-3"
-        >
+        <motion.div {...fadeIn(1.0)} className="flex flex-wrap justify-center gap-3">
           {badges.map((b, i) => (
             <motion.span
               key={b.label}
@@ -123,7 +105,6 @@ const Hero = () => {
         </motion.div>
       </div>
 
-      {/* Scroll indicator */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}

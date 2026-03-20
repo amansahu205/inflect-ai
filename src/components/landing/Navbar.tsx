@@ -28,8 +28,8 @@ const Navbar = () => {
         transition: "border-color 0.3s ease",
       }}
     >
-      <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-        <InflectLogo size={56} />
+      <div className="w-full px-8 h-16 flex items-center justify-between">
+        <InflectLogo size={32} />
 
         <div className="hidden md:flex items-center gap-8">
           {navLinks.map((l) => (

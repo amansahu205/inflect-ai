@@ -74,9 +74,14 @@ const VoiceMode = ({ mode, onModeChange, queries, onSubmit, onGenerateThesis, vo
   };
 
   const handleTranscript = useCallback(
-    (text: string) => {
-      setTextInput(text);
-      submitQuery(text);
+    (text: string, confidence: number) => {
+      if (confidence >= 0.8) {
+        setTextInput(text);
+        submitQuery(text);
+      } else {
+        setTextInput(text);
+        // Low confidence: show in input, don't auto-submit
+      }
     },
     [onSubmit]
   );

@@ -62,25 +62,51 @@ const AppResearch = () => {
   );
 
   const handleVoiceSubmit = useCallback(
-    async (text: string): Promise<AnswerResult> => {
+    async (text: string) => {
       const responseText = `Analysis for "${text}" — placeholder. Wire up your FastAPI backend.`;
-      const mockAnswer: AnswerResult = {
+      const lowerText = text.toLowerCase();
+
+      // Simple intent detection for mock data
+      const isPriceCheck = /what('s| is).*trading|price of|quote/i.test(lowerText);
+      const ticker = text.match(/\b[A-Z]{1,5}\b/)?.[0] || null;
+      const isMetric = /margin|revenue|earnings|eps|ratio|growth/i.test(lowerText);
+
+      const answerData: AnswerResult = {
         answer: responseText,
-        intent_type: "research",
-        ticker: text.match(/\b[A-Z]{1,5}\b/)?.[0] || null,
+        intent_type: isPriceCheck ? "price_check" : "research",
+        ticker,
         confidence: "HIGH",
-        source: "LLM",
-        citation: null,
+        source: isPriceCheck ? "MARKET_DATA" : isMetric ? "SEC_FILING" : "LLM",
+        citation: isMetric ? `${ticker || "AAPL"} 10-K · Filed Nov 3 2023 · Item 7` : null,
       };
+
+      const stockQuote = isPriceCheck && ticker ? {
+        ticker,
+        price: 189.5,
+        change_percent: 2.4,
+        volume: 52_300_000,
+        direction: "up" as const,
+        timestamp: new Date().toISOString(),
+      } : null;
+
+      const metricData = isMetric ? {
+        metric: lowerText.includes("margin") ? "Gross Margin" : "Revenue",
+        value: lowerText.includes("margin") ? "44.1%" : "$394.3B",
+        period: "Q4 2023",
+        change: "+0.8% YoY",
+        changeDirection: "up" as const,
+      } : null;
+
       if (user) {
         const { data } = await supabase
           .from("queries")
-          .insert({ user_id: user.id, transcript: text, response_text: responseText, mode: "voice", intent_type: "research" })
+          .insert({ user_id: user.id, transcript: text, response_text: responseText, mode: "voice", intent_type: answerData.intent_type })
           .select("id, transcript, response_text")
           .single();
         if (data) setQueries((prev) => [data as QueryRow, ...prev]);
       }
-      return mockAnswer;
+
+      return { answerData, stockQuote, metricData };
     },
     [user]
   );

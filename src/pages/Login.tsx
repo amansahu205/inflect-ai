@@ -1,12 +1,11 @@
 import { useState, useRef } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams, Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
-import { Navigate } from "react-router-dom";
+import { useAuthStore } from "@/store/authStore";
 import logo from "@/assets/inflect-logo.png";
 
 const Login = () => {
-  const { session, loading } = useAuth();
+  const { session, loading } = useAuthStore();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get("redirect_to") || "/app/research";
@@ -15,34 +14,20 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [emailError, setEmailError] = useState("");
 
   const attemptsRef = useRef(0);
   const lockedUntilRef = useRef(0);
 
-  if (!loading && session) {
-    return <Navigate to="/app/research" replace />;
-  }
-
-  const validateEmail = () => {
-    if (!email) {
-      setEmailError("Email is required.");
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setEmailError("Enter a valid email.");
-    } else {
-      setEmailError("");
-    }
-  };
+  if (!loading && session) return <Navigate to="/app/research" replace />;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
     if (Date.now() < lockedUntilRef.current) {
-      setError("Too many attempts. Try again in 15 minutes.");
+      setError("Too many attempts. Try again later.");
       return;
     }
-
     if (!email || !password) {
       setError("Please fill in all fields.");
       return;
@@ -56,7 +41,9 @@ const Login = () => {
       attemptsRef.current += 1;
       if (attemptsRef.current >= 5) {
         lockedUntilRef.current = Date.now() + 15 * 60 * 1000;
-        setError("Too many attempts. Try again in 15 minutes.");
+        setError("Too many attempts. Try again later.");
+      } else if (authError.message?.toLowerCase().includes("network") || authError.status === 0) {
+        setError("Login failed. Check your connection.");
       } else {
         setError("Incorrect email or password.");
       }
@@ -66,69 +53,82 @@ const Login = () => {
     navigate(redirectTo, { replace: true });
   };
 
+  const inputClass =
+    "w-full rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none transition-colors duration-200";
+
   return (
-    <div className="min-h-screen flex items-center justify-center px-4" style={{ background: "#080C14" }}>
+    <div className="min-h-screen relative" style={{ background: "#080C14" }}>
       <div
-        className="w-full rounded-xl"
-        style={{
-          maxWidth: 420,
-          background: "#0F1820",
-          border: "1px solid #1E2D40",
-          borderRadius: 12,
-          padding: 40,
-        }}
+        className="absolute w-full"
+        style={{ top: "50%", left: "50%", transform: "translate(-50%, -50%)", maxWidth: 420, padding: "0 16px" }}
       >
         <div className="flex justify-center mb-8">
-          <img src={logo} alt="Inflect" className="h-10 object-contain" />
+          <img src={logo} alt="Inflect" style={{ height: 40 }} className="object-contain" />
         </div>
 
-        <h1 className="font-display text-2xl font-bold text-foreground text-center mb-8">Log In</h1>
+        <div style={{ background: "#0F1820", border: "1px solid #1E2D40", borderRadius: 12, padding: 40 }}>
+          <h1 className="font-display text-xl font-bold text-foreground text-center mb-8">Welcome back</h1>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label className="block text-sm text-muted-foreground mb-1.5">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              onBlur={validateEmail}
-              className="w-full h-11 rounded-lg px-4 text-sm bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-              placeholder="you@example.com"
-            />
-            {emailError && <p className="text-xs mt-1" style={{ color: "#E05555" }}>{emailError}</p>}
-          </div>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label style={{ color: "#8892A4", fontSize: 12, letterSpacing: "0.05em" }} className="block mb-1.5">
+                Email
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                className={inputClass}
+                style={{ background: "#080C14", border: "1px solid #1E2D40", borderRadius: 8, padding: "12px 16px", fontSize: 14 }}
+                onFocus={(e) => (e.target.style.borderColor = "#F0A500")}
+                onBlur={(e) => (e.target.style.borderColor = "#1E2D40")}
+              />
+            </div>
 
-          <div>
-            <label className="block text-sm text-muted-foreground mb-1.5">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full h-11 rounded-lg px-4 text-sm bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-              placeholder="••••••••"
-            />
-          </div>
+            <div>
+              <label style={{ color: "#8892A4", fontSize: 12, letterSpacing: "0.05em" }} className="block mb-1.5">
+                Password
+              </label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter your password"
+                className={inputClass}
+                style={{ background: "#080C14", border: "1px solid #1E2D40", borderRadius: 8, padding: "12px 16px", fontSize: 14 }}
+                onFocus={(e) => (e.target.style.borderColor = "#F0A500")}
+                onBlur={(e) => (e.target.style.borderColor = "#1E2D40")}
+              />
+            </div>
 
-          {error && (
-            <p className="text-sm text-center" style={{ color: "#E05555" }}>{error}</p>
-          )}
+            {error && <p style={{ color: "#E05555", fontSize: 12 }}>{error}</p>}
 
-          <button
-            type="submit"
-            disabled={submitting}
-            className="w-full h-11 font-semibold text-sm transition-colors disabled:opacity-50"
-            style={{ background: "#F0A500", color: "#080C14", borderRadius: 8 }}
-          >
-            {submitting ? "Logging in…" : "Log In"}
-          </button>
-        </form>
+            <button
+              type="submit"
+              disabled={submitting}
+              className="w-full cursor-pointer transition-colors duration-200"
+              style={{
+                background: "#F0A500",
+                color: "#080C14",
+                fontWeight: 700,
+                borderRadius: 8,
+                padding: 12,
+                fontSize: 15,
+                opacity: submitting ? 0.7 : 1,
+              }}
+              onMouseEnter={(e) => !submitting && (e.currentTarget.style.background = "#D4920A")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "#F0A500")}
+            >
+              {submitting ? "Logging in…" : "Log In"}
+            </button>
+          </form>
 
-        <p className="text-center text-sm text-muted-foreground mt-6">
-          Don't have an account?{" "}
-          <Link to="/register" className="font-medium" style={{ color: "#F0A500" }}>
-            Sign up
-          </Link>
-        </p>
+          <p className="text-center text-sm mt-6" style={{ color: "#8892A4" }}>
+            Don't have an account?{" "}
+            <Link to="/register" className="font-medium" style={{ color: "#F0A500" }}>Sign up →</Link>
+          </p>
+        </div>
       </div>
     </div>
   );

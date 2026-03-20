@@ -1,10 +1,12 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuthStore } from "@/store/authStore";
+import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/inflect-logo.png";
 
 const AppNavbar = () => {
-  const { user, signOut } = useAuth();
+  const { user } = useAuthStore();
+  const signOut = async () => { await supabase.auth.signOut(); };
   const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);

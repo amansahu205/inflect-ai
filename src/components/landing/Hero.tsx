@@ -42,9 +42,9 @@ const Hero = () => {
           <span
             className="text-xs font-medium tracking-wider px-4 py-1.5 rounded-full"
             style={{
-              border: "1px solid rgba(240,165,0,0.4)",
-              background: "rgba(240,165,0,0.1)",
-              color: "hsl(38,100%,47%)",
+              border: "1px solid rgba(240,165,0,0.3)",
+              background: "rgba(240,165,0,0.08)",
+              color: "#F0A500",
             }}
           >
             [ AI Financial Research ]

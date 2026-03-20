@@ -59,16 +59,9 @@ const Login = () => {
 
   return (
     <div className="min-h-screen relative overflow-hidden" style={{ background: "#080C14" }}>
-      {/* Video background */}
-      <video autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover z-0">
-        <source src="/videos/hero_bg.mp4" type="video/mp4" />
-      </video>
-      {/* Dark overlay */}
-      <div className="absolute inset-0 z-[1]" style={{ background: "rgba(8,12,20,0.88)" }} />
-      {/* Top fade */}
-      <div className="absolute top-0 left-0 right-0 z-[3]" style={{ height: 120, background: "linear-gradient(to bottom, #080C14, transparent)" }} />
-      {/* Bottom fade */}
-      <div className="absolute bottom-0 left-0 right-0 z-[3]" style={{ height: 120, background: "linear-gradient(to top, #080C14, transparent)" }} />
+      <MatrixCanvas />
+      {/* Vignette behind card */}
+      <div className="fixed inset-0 z-[5] pointer-events-none" style={{ background: "radial-gradient(ellipse 60% 70% at 50% 50%, rgba(8,12,20,0.7) 0%, transparent 100%)" }} />
 
       <div
         className="absolute w-full z-[2]"

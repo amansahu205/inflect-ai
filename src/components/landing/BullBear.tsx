@@ -11,7 +11,7 @@ const BullBear = () => {
   const [ref, inView] = useInView({ triggerOnce: true, rootMargin: "-100px" });
 
   return (
-    <section className="relative py-32 px-6 overflow-hidden" ref={ref}>
+    <section className="relative min-h-[80vh] flex items-center px-6 overflow-hidden" ref={ref}>
       {/* Video bg */}
       <video
         autoPlay

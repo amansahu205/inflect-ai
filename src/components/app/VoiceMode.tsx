@@ -18,6 +18,7 @@ interface VoiceModeProps {
   queries: Array<{ id: string; transcript: string; response_text: string }>;
   onSubmit: (text: string) => Promise<VoiceSubmitResult | void>;
   onGenerateThesis: (ticker: string) => Promise<ThesisResult | null>;
+  onPlotTrend: (ticker: string, metric: string | null) => Promise<ChartData | null>;
   voiceStateOverride?: "idle" | "playing" | null;
 }
 

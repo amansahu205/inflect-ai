@@ -4,7 +4,7 @@ const companies = [
   "berkshirehathaway.com", "jpmorgan.com", "goldmansachs.com", "visa.com",
 ];
 
-const LOGO_TOKEN = "pk_YND0MrRRQ2mFWHB5MrDLyw";
+const LOGO_TOKEN = "pk_AH1Nlal1QY6dlBilaz85Bg";
 
 const LogoStrip = () => (
   <section className="py-10 border-t border-b border-border overflow-hidden" style={{ background: "#060A12" }}>

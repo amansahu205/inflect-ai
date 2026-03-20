@@ -12,14 +12,10 @@ import VoiceMode from "@/components/app/VoiceMode";
 import ChatMode from "@/components/app/ChatMode";
 import TradeModal from "@/components/trading/TradeModal";
 import type { ChatMessage } from "@/components/chat/ChatThread";
-import type { AnswerResult, ThesisResult, TradeOrder, StockQuote } from "@/types/api";
+import type { AnswerResult, ThesisResult, TradeOrder, StockQuote, Query } from "@/types/api";
 import type { AnalyzeResult } from "@/api/query";
 
-interface QueryRow {
-  id: string;
-  transcript: string;
-  response_text: string;
-}
+type QueryRow = Query;
 
 // Whether the FastAPI backend is available
 const USE_BACKEND = !!import.meta.env.VITE_API_URL;

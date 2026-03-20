@@ -12,7 +12,7 @@ const VoiceShowcase = () => {
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.8 }}
           className="relative mx-auto mb-8"
-          style={{ maxWidth: 400 }}
+          style={{ maxWidth: 700 }}
         >
           <motion.div
             animate={{ scale: [1, 1.02, 1] }}

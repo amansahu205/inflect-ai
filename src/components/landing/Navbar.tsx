@@ -29,7 +29,7 @@ const Navbar = () => {
       }}
     >
       <div className="w-full px-8 h-16 flex items-center justify-between">
-        <InflectLogo size={32} />
+        <InflectLogo size={52} />
 
         <div className="hidden md:flex items-center gap-8">
           {navLinks.map((l) => (

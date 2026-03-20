@@ -8,7 +8,7 @@ const CTA = () => {
     <section
       id="cta"
       ref={ref}
-      className="relative py-32 px-6 overflow-hidden"
+      className="relative py-32 px-6 overflow-hidden video-section-fade"
     >
       <video
         autoPlay muted loop playsInline

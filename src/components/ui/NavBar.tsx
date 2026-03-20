@@ -1,12 +1,18 @@
 import { useState, useRef, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
 import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/inflect-logo.png";
 
+const navLinks = [
+  { to: "/app/research", label: "Research" },
+  { to: "/app/portfolio", label: "Portfolio" },
+];
+
 const NavBar = () => {
   const { user } = useAuthStore();
   const navigate = useNavigate();
+  const location = useLocation();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -46,15 +52,31 @@ const NavBar = () => {
       />
 
       <div className="flex items-center gap-6">
-        <Link
-          to="/app/portfolio"
-          className="transition-colors duration-200"
-          style={{ color: "#8892A4", fontSize: 14 }}
-          onMouseEnter={(e) => (e.currentTarget.style.color = "#FFFFFF")}
-          onMouseLeave={(e) => (e.currentTarget.style.color = "#8892A4")}
-        >
-          Portfolio
-        </Link>
+        {navLinks.map((link) => {
+          const isActive = location.pathname === link.to;
+          return (
+            <Link
+              key={link.to}
+              to={link.to}
+              className="transition-colors duration-200"
+              style={{
+                color: isActive ? "#F0A500" : "#8892A4",
+                fontSize: 14,
+                fontWeight: isActive ? 600 : 400,
+                paddingBottom: 4,
+                borderBottom: isActive ? "2px solid #F0A500" : "2px solid transparent",
+              }}
+              onMouseEnter={(e) => {
+                if (!isActive) e.currentTarget.style.color = "#FFFFFF";
+              }}
+              onMouseLeave={(e) => {
+                if (!isActive) e.currentTarget.style.color = "#8892A4";
+              }}
+            >
+              {link.label}
+            </Link>
+          );
+        })}
 
         <div className="relative" ref={ref}>
           <button

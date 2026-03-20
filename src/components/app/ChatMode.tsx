@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { motion } from "framer-motion";
 import ModeToggle from "@/components/ui/ModeToggle";
 import OutputPanel from "./OutputPanel";
 import ChatThread from "@/components/chat/ChatThread";
@@ -61,7 +62,13 @@ const ChatMode = ({ mode, onModeChange, onSubmit, messages, onNewMessage, onGene
   );
 
   return (
-    <div className="flex flex-col" style={{ height: "calc(100vh - 104px)" }}>
+    <motion.div
+      className="flex flex-col"
+      style={{ height: "calc(100vh - 104px)" }}
+      initial={{ opacity: 0, x: 12 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.2, ease: "easeInOut" }}
+    >
       <div className="flex justify-end px-8 py-3 shrink-0">
         <ModeToggle activeMode={mode} onChange={onModeChange} />
       </div>
@@ -76,7 +83,7 @@ const ChatMode = ({ mode, onModeChange, onSubmit, messages, onNewMessage, onGene
           <OutputPanel content={latestResponse} onChipClick={handleChipClick} />
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

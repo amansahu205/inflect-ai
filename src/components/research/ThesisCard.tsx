@@ -76,6 +76,7 @@ const ThesisCard = ({ thesis, isLoading }: ThesisCardProps) => {
 
   return (
     <div
+      className="inflect-card"
       style={{
         background: "#0F1820",
         border: "1px solid #1E2D40",

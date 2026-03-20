@@ -19,7 +19,7 @@ interface QueryRow {
 }
 
 const AppResearch = () => {
-  const { user } = useAuth();
+  const { user } = useAuthStore();
   const [mode, setMode] = useState<"voice" | "chat">("voice");
   const [profile, setProfile] = useState<Profile | null>(null);
   const [queries, setQueries] = useState<QueryRow[]>([]);

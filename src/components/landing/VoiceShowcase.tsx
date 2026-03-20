@@ -34,18 +34,18 @@ const VoiceShowcase = () => {
           initial={{ opacity: 0 }}
           animate={inView ? { opacity: 1 } : {}}
           transition={{ delay: 0.3, duration: 0.6 }}
-          className="text-xs tracking-[0.2em] uppercase mb-3" style={{ color: "#F0A500" }}
+          className="text-xs tracking-[0.2em] uppercase mb-4" style={{ color: "#F0A500" }}
         >
           Inflect Listens
         </motion.p>
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={inView ? { opacity: 1 } : {}}
+        <motion.h2
+          initial={{ opacity: 0, y: 20 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ delay: 0.5, duration: 0.6 }}
-          className="text-muted-foreground"
+          className="text-2xl md:text-4xl font-bold tracking-tight text-foreground"
         >
           Click the mic. Ask anything about a stock.
-        </motion.p>
+        </motion.h2>
       </div>
     </section>
   );

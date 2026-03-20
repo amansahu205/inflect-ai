@@ -3,7 +3,7 @@ import ModeToggle from "@/components/ui/ModeToggle";
 import OutputPanel from "./OutputPanel";
 import VoiceButton from "@/components/voice/VoiceButton";
 import type { VoiceState } from "@/components/voice/VoiceButton";
-import type { AnswerResult } from "@/types/api";
+import type { AnswerResult, StockQuote } from "@/types/api";
 
 interface VoiceModeProps {
   mode: "voice" | "chat";

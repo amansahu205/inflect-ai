@@ -11,7 +11,7 @@ const steps = [
   },
   {
     icon: ShieldCheck,
-    iconColor: "#00D68F",
+    iconColor: "#F0A500",
     title: "AI Verifies",
     desc: "SEC filings + Wolfram|Alpha check every single claim",
   },

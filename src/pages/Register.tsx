@@ -1,28 +1,30 @@
 import { useState } from "react";
 import { Link, useNavigate, Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuthStore } from "@/store/authStore";
 import logo from "@/assets/inflect-logo.png";
 
-const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
+const passwordChecks = [
+  { test: (p: string) => p.length >= 8, msg: "Password must be 8+ characters" },
+  { test: (p: string) => /\d/.test(p), msg: "Include at least one number" },
+  { test: (p: string) => /[A-Z]/.test(p), msg: "Include at least one uppercase letter" },
+];
 
 const Register = () => {
-  const { session, loading } = useAuth();
+  const { session, loading } = useAuthStore();
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
-  const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
   const [emailError, setEmailError] = useState("");
-  const [passwordError, setPasswordError] = useState("");
+  const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
   const [confirmError, setConfirmError] = useState("");
 
-  if (!loading && session) {
-    return <Navigate to="/app/research" replace />;
-  }
+  if (!loading && session) return <Navigate to="/app/research" replace />;
 
   const validateEmail = () => {
     if (!email) setEmailError("Email is required.");
@@ -31,31 +33,23 @@ const Register = () => {
   };
 
   const validatePassword = () => {
-    if (!password) setPasswordError("Password is required.");
-    else if (!passwordRegex.test(password))
-      setPasswordError("Password must be 8+ chars with one number and one uppercase.");
-    else setPasswordError("");
+    const errs = passwordChecks.filter((c) => !c.test(password)).map((c) => c.msg);
+    setPasswordErrors(errs);
   };
 
   const validateConfirm = () => {
-    if (password !== confirm) setConfirmError("Passwords don't match.");
-    else setConfirmError("");
+    setConfirmError(password !== confirm ? "Passwords don't match" : "");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-
     validateEmail();
     validatePassword();
     validateConfirm();
 
-    if (!email || !password || !confirm) {
-      setError("Please fill in all fields.");
-      return;
-    }
-    if (!passwordRegex.test(password)) return;
-    if (password !== confirm) return;
+    const pwErrs = passwordChecks.filter((c) => !c.test(password));
+    if (!email || emailError || pwErrs.length > 0 || password !== confirm) return;
 
     setSubmitting(true);
     const { error: authError } = await supabase.auth.signUp({
@@ -66,98 +60,136 @@ const Register = () => {
     setSubmitting(false);
 
     if (authError) {
-      if (authError.status === 409 || authError.message?.toLowerCase().includes("already")) {
-        setError("Account already exists. Log in →");
+      if (authError.status === 409 || authError.status === 422 || authError.message?.toLowerCase().includes("already")) {
+        setError("already_exists");
       } else {
         setError("Couldn't create account. Try again.");
       }
       return;
     }
-
     navigate("/app/research", { replace: true });
   };
 
+  const inputClass =
+    "w-full rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none transition-colors duration-200";
+
   return (
-    <div className="min-h-screen flex items-center justify-center px-4" style={{ background: "#080C14" }}>
+    <div className="min-h-screen relative" style={{ background: "#080C14" }}>
       <div
-        className="w-full"
-        style={{
-          maxWidth: 420,
-          background: "#0F1820",
-          border: "1px solid #1E2D40",
-          borderRadius: 12,
-          padding: 40,
-        }}
+        className="absolute w-full"
+        style={{ top: "50%", left: "50%", transform: "translate(-50%, -50%)", maxWidth: 420, padding: "0 16px" }}
       >
         <div className="flex justify-center mb-8">
-          <img src={logo} alt="Inflect" className="h-10 object-contain" />
+          <img src={logo} alt="Inflect" style={{ height: 40 }} className="object-contain" />
         </div>
 
-        <h1 className="font-display text-2xl font-bold text-foreground text-center mb-8">Create Account</h1>
+        <div style={{ background: "#0F1820", border: "1px solid #1E2D40", borderRadius: 12, padding: 40 }}>
+          <h1 className="font-display text-xl font-bold text-foreground text-center mb-8">Create your account</h1>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label className="block text-sm text-muted-foreground mb-1.5">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              onBlur={validateEmail}
-              className="w-full h-11 rounded-lg px-4 text-sm bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-              placeholder="you@example.com"
-            />
-            {emailError && <p className="text-xs mt-1" style={{ color: "#E05555" }}>{emailError}</p>}
-          </div>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <Field label="Email" error={emailError}>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                onBlur={validateEmail}
+                placeholder="you@example.com"
+                className={inputClass}
+                style={{ background: "#080C14", border: "1px solid #1E2D40", borderRadius: 8, padding: "12px 16px", fontSize: 14 }}
+                onFocus={(e) => (e.target.style.borderColor = "#F0A500")}
+                onBlurCapture={(e) => (e.target.style.borderColor = "#1E2D40")}
+              />
+            </Field>
 
-          <div>
-            <label className="block text-sm text-muted-foreground mb-1.5">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              onBlur={validatePassword}
-              className="w-full h-11 rounded-lg px-4 text-sm bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-              placeholder="••••••••"
-            />
-            {passwordError && <p className="text-xs mt-1" style={{ color: "#E05555" }}>{passwordError}</p>}
-          </div>
+            <Field label="Password" errors={passwordErrors}>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onBlur={validatePassword}
+                placeholder="Min 8 chars, 1 number, 1 uppercase"
+                className={inputClass}
+                style={{ background: "#080C14", border: "1px solid #1E2D40", borderRadius: 8, padding: "12px 16px", fontSize: 14 }}
+                onFocus={(e) => (e.target.style.borderColor = "#F0A500")}
+                onBlurCapture={(e) => (e.target.style.borderColor = "#1E2D40")}
+              />
+            </Field>
 
-          <div>
-            <label className="block text-sm text-muted-foreground mb-1.5">Confirm Password</label>
-            <input
-              type="password"
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
-              onBlur={validateConfirm}
-              className="w-full h-11 rounded-lg px-4 text-sm bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-              placeholder="••••••••"
-            />
-            {confirmError && <p className="text-xs mt-1" style={{ color: "#E05555" }}>{confirmError}</p>}
-          </div>
+            <Field label="Confirm Password" error={confirmError}>
+              <input
+                type="password"
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
+                onBlur={validateConfirm}
+                placeholder="Re-enter password"
+                className={inputClass}
+                style={{ background: "#080C14", border: "1px solid #1E2D40", borderRadius: 8, padding: "12px 16px", fontSize: 14 }}
+                onFocus={(e) => (e.target.style.borderColor = "#F0A500")}
+                onBlurCapture={(e) => (e.target.style.borderColor = "#1E2D40")}
+              />
+            </Field>
 
-          {error && (
-            <p className="text-sm text-center" style={{ color: "#E05555" }}>{error}</p>
-          )}
+            {error && error !== "already_exists" && (
+              <p style={{ color: "#E05555", fontSize: 12 }}>{error}</p>
+            )}
+            {error === "already_exists" && (
+              <p style={{ color: "#E05555", fontSize: 12 }}>
+                Account already exists.{" "}
+                <Link to="/login" style={{ color: "#F0A500" }}>Log in instead →</Link>
+              </p>
+            )}
 
-          <button
-            type="submit"
-            disabled={submitting}
-            className="w-full h-11 font-semibold text-sm transition-colors disabled:opacity-50"
-            style={{ background: "#F0A500", color: "#080C14", borderRadius: 8 }}
-          >
-            {submitting ? "Creating account…" : "Create Account"}
-          </button>
-        </form>
+            <button
+              type="submit"
+              disabled={submitting}
+              className="w-full cursor-pointer transition-colors duration-200"
+              style={{
+                background: "#F0A500",
+                color: "#080C14",
+                fontWeight: 700,
+                borderRadius: 8,
+                padding: 12,
+                fontSize: 15,
+                opacity: submitting ? 0.7 : 1,
+              }}
+              onMouseEnter={(e) => !submitting && (e.currentTarget.style.background = "#D4920A")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "#F0A500")}
+            >
+              {submitting ? "Creating account…" : "Create Account"}
+            </button>
+          </form>
 
-        <p className="text-center text-sm text-muted-foreground mt-6">
-          Already have an account?{" "}
-          <Link to="/login" className="font-medium" style={{ color: "#F0A500" }}>
-            Log in
-          </Link>
-        </p>
+          <p className="text-center text-sm mt-6" style={{ color: "#8892A4" }}>
+            Already have an account?{" "}
+            <Link to="/login" className="font-medium" style={{ color: "#F0A500" }}>Log in →</Link>
+          </p>
+        </div>
       </div>
     </div>
   );
 };
+
+const Field = ({
+  label,
+  error,
+  errors,
+  children,
+}: {
+  label: string;
+  error?: string;
+  errors?: string[];
+  children: React.ReactNode;
+}) => (
+  <div>
+    <label style={{ color: "#8892A4", fontSize: 12, letterSpacing: "0.05em" }} className="block mb-1.5">
+      {label}
+    </label>
+    {children}
+    {error && <p style={{ color: "#E05555", fontSize: 12, marginTop: 6 }}>{error}</p>}
+    {errors?.map((e) => (
+      <p key={e} style={{ color: "#E05555", fontSize: 12, marginTop: 6 }}>{e}</p>
+    ))}
+  </div>
+);
 
 export default Register;

@@ -4,6 +4,7 @@ import OutputPanel from "./OutputPanel";
 import VoiceButton from "@/components/voice/VoiceButton";
 import type { VoiceState } from "@/components/voice/VoiceButton";
 import type { AnswerResult, StockQuote, ThesisResult } from "@/types/api";
+import type { ChartData } from "@/api/chart";
 
 interface VoiceSubmitResult {
   answerData: AnswerResult;

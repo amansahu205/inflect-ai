@@ -2,8 +2,9 @@ import { useState, useCallback } from "react";
 import ModeToggle from "@/components/ui/ModeToggle";
 import OutputPanel from "./OutputPanel";
 import VoiceButton from "@/components/voice/VoiceButton";
+import QueryHistory from "@/components/research/QueryHistory";
 import type { VoiceState } from "@/components/voice/VoiceButton";
-import type { AnswerResult, StockQuote, ThesisResult } from "@/types/api";
+import type { AnswerResult, StockQuote, ThesisResult, Query } from "@/types/api";
 import type { ChartData } from "@/api/chart";
 
 interface VoiceSubmitResult {
@@ -15,14 +16,15 @@ interface VoiceSubmitResult {
 interface VoiceModeProps {
   mode: "voice" | "chat";
   onModeChange: (mode: "voice" | "chat") => void;
-  queries: Array<{ id: string; transcript: string; response_text: string }>;
+  queries: Query[];
   onSubmit: (text: string) => Promise<VoiceSubmitResult | void>;
   onGenerateThesis: (ticker: string) => Promise<ThesisResult | null>;
   onPlotTrend: (ticker: string, metric: string | null) => Promise<ChartData | null>;
+  onClearQueries?: () => void;
   voiceStateOverride?: "idle" | "playing" | null;
 }
 
-const VoiceMode = ({ mode, onModeChange, queries, onSubmit, onGenerateThesis, onPlotTrend, voiceStateOverride }: VoiceModeProps) => {
+const VoiceMode = ({ mode, onModeChange, queries, onSubmit, onGenerateThesis, onPlotTrend, onClearQueries, voiceStateOverride }: VoiceModeProps) => {
   const [textInput, setTextInput] = useState("");
   const [selectedOutput, setSelectedOutput] = useState<string | null>(null);
   const [answerData, setAnswerData] = useState<AnswerResult | null>(null);
@@ -31,12 +33,14 @@ const VoiceMode = ({ mode, onModeChange, queries, onSubmit, onGenerateThesis, on
   const [thesisData, setThesisData] = useState<ThesisResult | null>(null);
   const [thesisLoading, setThesisLoading] = useState(false);
   const [chartData, setChartData] = useState<ChartData | null>(null);
+  const [activeQueryId, setActiveQueryId] = useState<string | null>(null);
   const [voiceState, setVoiceState] = useState<VoiceState>("idle");
 
   const submitQuery = async (text: string) => {
     setThesisData(null);
     setThesisLoading(false);
     setChartData(null);
+    setActiveQueryId(null);
     const result = await onSubmit(text);
     if (result) {
       setAnswerData(result.answerData);
@@ -76,14 +80,13 @@ const VoiceMode = ({ mode, onModeChange, queries, onSubmit, onGenerateThesis, on
 
   const handleChipClick = (text: string) => setTextInput(text);
 
-  const handleQuerySelect = (id: string) => {
-    const q = queries.find((q) => q.id === id);
-    if (q) {
-      setSelectedOutput(q.response_text || "No response available.");
-      setAnswerData(null);
-      setThesisData(null);
-    }
-  };
+  const handleQuerySelect = useCallback((query: Query) => {
+    setActiveQueryId(query.id);
+    setSelectedOutput(query.response_text || "No response available.");
+    setAnswerData(null);
+    setThesisData(null);
+    setChartData(null);
+  }, []);
 
   const handleTranscript = useCallback(
     (text: string, confidence: number) => {
@@ -92,7 +95,6 @@ const VoiceMode = ({ mode, onModeChange, queries, onSubmit, onGenerateThesis, on
         submitQuery(text);
       } else {
         setTextInput(text);
-        // Low confidence: show in input, don't auto-submit
       }
     },
     [onSubmit]
@@ -106,38 +108,19 @@ const VoiceMode = ({ mode, onModeChange, queries, onSubmit, onGenerateThesis, on
     <div className="flex" style={{ height: "calc(100vh - 104px)" }}>
       {/* Left: Query History */}
       <div
-        className="overflow-y-auto shrink-0"
+        className="shrink-0"
         style={{
           width: "20%",
           minWidth: 200,
-          background: "#0F1820",
           borderRight: "1px solid #1E2D40",
-          padding: "20px 16px",
         }}
       >
-        <h3 style={{ color: "#8892A4", fontSize: 10, letterSpacing: "0.2em", marginBottom: 16 }}>
-          QUERY HISTORY
-        </h3>
-        {queries.length === 0 ? (
-          <p style={{ color: "#8892A4", fontSize: 13, textAlign: "center", marginTop: 40 }}>
-            Your queries will appear here
-          </p>
-        ) : (
-          <div className="flex flex-col gap-1">
-            {queries.map((q, i) => (
-              <button
-                key={q.id}
-                onClick={() => handleQuerySelect(q.id)}
-                className="text-left truncate transition-colors duration-150"
-                style={{ color: "#8892A4", fontSize: 12, padding: "6px 0", cursor: "pointer", background: "none", border: "none" }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = "#FFFFFF")}
-                onMouseLeave={(e) => (e.currentTarget.style.color = "#8892A4")}
-              >
-                Q{i + 1}: {q.transcript?.slice(0, 30) || "..."}
-              </button>
-            ))}
-          </div>
-        )}
+        <QueryHistory
+          queries={queries}
+          onSelect={handleQuerySelect}
+          activeQueryId={activeQueryId}
+          onClear={onClearQueries}
+        />
       </div>
 
       {/* Center: Voice area */}

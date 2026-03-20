@@ -18,12 +18,12 @@ const VoiceShowcase = () => {
             animate={{ scale: [1, 1.02, 1] }}
             transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
             className="rounded-2xl overflow-hidden"
-            style={{ boxShadow: "0 0 80px rgba(0,200,255,0.3)" }}
+            style={{ boxShadow: "0 0 80px rgba(0,200,255,0.3)", marginBottom: -40 }}
           >
             <video
               autoPlay muted loop playsInline
-              className="w-full block rounded-2xl"
-              style={{ objectFit: "cover", objectPosition: "center top", height: "calc(100% - 40px)" }}
+              className="w-full block"
+              style={{ marginBottom: -40 }}
             >
               <source src="/videos/voice_button.mp4" type="video/mp4" />
             </video>

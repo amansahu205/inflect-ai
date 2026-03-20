@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import VoiceMode from "@/components/app/VoiceMode";
 import ChatMode from "@/components/app/ChatMode";
 import type { ChatMessage } from "@/components/chat/ChatThread";
+import type { AnswerResult } from "@/types/api";
 
 interface QueryRow {
   id: string;
@@ -61,15 +62,25 @@ const AppResearch = () => {
   );
 
   const handleVoiceSubmit = useCallback(
-    async (text: string) => {
-      if (!user) return;
+    async (text: string): Promise<AnswerResult> => {
       const responseText = `Analysis for "${text}" — placeholder. Wire up your FastAPI backend.`;
-      const { data } = await supabase
-        .from("queries")
-        .insert({ user_id: user.id, transcript: text, response_text: responseText, mode: "voice", intent_type: "research" })
-        .select("id, transcript, response_text")
-        .single();
-      if (data) setQueries((prev) => [data as QueryRow, ...prev]);
+      const mockAnswer: AnswerResult = {
+        answer: responseText,
+        intent_type: "research",
+        ticker: text.match(/\b[A-Z]{1,5}\b/)?.[0] || null,
+        confidence: "HIGH",
+        source: "LLM",
+        citation: null,
+      };
+      if (user) {
+        const { data } = await supabase
+          .from("queries")
+          .insert({ user_id: user.id, transcript: text, response_text: responseText, mode: "voice", intent_type: "research" })
+          .select("id, transcript, response_text")
+          .single();
+        if (data) setQueries((prev) => [data as QueryRow, ...prev]);
+      }
+      return mockAnswer;
     },
     [user]
   );

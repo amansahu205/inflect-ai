@@ -3,39 +3,48 @@ import ModeToggle from "@/components/ui/ModeToggle";
 import OutputPanel from "./OutputPanel";
 import VoiceButton from "@/components/voice/VoiceButton";
 import type { VoiceState } from "@/components/voice/VoiceButton";
+import type { AnswerResult } from "@/types/api";
 
 interface VoiceModeProps {
   mode: "voice" | "chat";
   onModeChange: (mode: "voice" | "chat") => void;
   queries: Array<{ id: string; transcript: string; response_text: string }>;
-  onSubmit: (text: string) => Promise<void>;
+  onSubmit: (text: string) => Promise<AnswerResult | void>;
 }
 
 const VoiceMode = ({ mode, onModeChange, queries, onSubmit }: VoiceModeProps) => {
   const [textInput, setTextInput] = useState("");
   const [selectedOutput, setSelectedOutput] = useState<string | null>(null);
+  const [answerData, setAnswerData] = useState<AnswerResult | null>(null);
   const [voiceState, setVoiceState] = useState<VoiceState>("idle");
+
+  const submitQuery = async (text: string) => {
+    const result = await onSubmit(text);
+    if (result) setAnswerData(result);
+  };
 
   const handleTextSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!textInput.trim()) return;
     const text = textInput.trim();
     setTextInput("");
-    await onSubmit(text);
+    await submitQuery(text);
   };
 
   const handleChipClick = (text: string) => setTextInput(text);
 
   const handleQuerySelect = (id: string) => {
     const q = queries.find((q) => q.id === id);
-    if (q) setSelectedOutput(q.response_text || "No response available.");
+    if (q) {
+      setSelectedOutput(q.response_text || "No response available.");
+      setAnswerData(null);
+    }
   };
 
   const handleTranscript = useCallback(
     (text: string) => {
       setTextInput(text);
-      // Auto-submit transcript
-      onSubmit(text);
+      submitQuery(text);
     },
     [onSubmit]
   );
@@ -71,7 +80,7 @@ const VoiceMode = ({ mode, onModeChange, queries, onSubmit }: VoiceModeProps) =>
                 key={q.id}
                 onClick={() => handleQuerySelect(q.id)}
                 className="text-left truncate transition-colors duration-150"
-                style={{ color: "#8892A4", fontSize: 12, padding: "6px 0", cursor: "pointer" }}
+                style={{ color: "#8892A4", fontSize: 12, padding: "6px 0", cursor: "pointer", background: "none", border: "none" }}
                 onMouseEnter={(e) => (e.currentTarget.style.color = "#FFFFFF")}
                 onMouseLeave={(e) => (e.currentTarget.style.color = "#8892A4")}
               >
@@ -116,7 +125,13 @@ const VoiceMode = ({ mode, onModeChange, queries, onSubmit }: VoiceModeProps) =>
 
       {/* Right: Output */}
       <div style={{ width: "40%", borderLeft: "1px solid #1E2D40" }}>
-        <OutputPanel content={selectedOutput} onChipClick={handleChipClick} />
+        <OutputPanel
+          content={selectedOutput}
+          answerData={answerData}
+          onChipClick={handleChipClick}
+          onGenerateThesis={() => {}}
+          onPlotTrend={() => {}}
+        />
       </div>
     </div>
   );

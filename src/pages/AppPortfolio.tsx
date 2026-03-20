@@ -59,7 +59,7 @@ const AppPortfolio = () => {
       <div className="grid grid-cols-4 gap-4" style={{ marginBottom: 32 }}>
         {summaryCards.map((card) => (
           <div
-            key={card.label}
+            className="inflect-card"
             style={{ background: "#0F1820", border: "1px solid #1E2D40", borderRadius: 12, padding: 20 }}
           >
             <p style={{ color: "#8892A4", fontSize: 10, letterSpacing: "0.2em", marginBottom: 8 }}>{card.label}</p>

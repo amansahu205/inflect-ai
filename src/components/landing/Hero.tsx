@@ -40,10 +40,11 @@ const Hero = () => {
       <div className="relative z-10 text-center px-6 max-w-4xl mx-auto pt-20">
         <motion.div {...fadeIn(0.2)} className="inline-block mb-6">
           <span
-            className="text-primary text-xs font-medium tracking-wider px-4 py-1.5 rounded-full"
+            className="text-xs font-medium tracking-wider px-4 py-1.5 rounded-full"
             style={{
-              border: "1px solid rgba(0,200,255,0.3)",
-              background: "rgba(0,200,255,0.08)",
+              border: "1px solid rgba(240,165,0,0.4)",
+              background: "rgba(240,165,0,0.1)",
+              color: "hsl(38,100%,47%)",
             }}
           >
             [ AI Financial Research ]
@@ -52,7 +53,13 @@ const Hero = () => {
 
         <motion.h1
           {...fadeIn(0.4)}
-          className="font-display font-bold text-foreground text-[40px] md:text-[72px] leading-[1.05] mb-6"
+          className="font-display font-bold text-[40px] md:text-[72px] leading-[1.05] mb-6"
+          style={{
+            background: "linear-gradient(135deg, hsl(38,100%,55%) 0%, hsl(0,68%,61%) 100%)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            filter: "drop-shadow(0 0 30px rgba(240,165,0,0.3))",
+          }}
         >
           Find the Inflection Point.
         </motion.h1>
@@ -68,9 +75,13 @@ const Hero = () => {
         <motion.div {...fadeIn(0.8)} className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
           <motion.a
             href="#cta"
-            whileHover={{ scale: 1.05 }}
+            whileHover={{ scale: 1.05, boxShadow: "0 0 30px rgba(240,165,0,0.4)" }}
             whileTap={{ scale: 0.97 }}
-            className="bg-primary text-primary-foreground font-semibold px-8 py-3 rounded-full text-sm"
+            className="font-semibold px-8 py-3 rounded-full text-sm"
+            style={{
+              background: "linear-gradient(135deg, hsl(38,100%,47%) 0%, hsl(15,90%,50%) 100%)",
+              color: "#080C14",
+            }}
           >
             Start Demo
           </motion.a>
@@ -78,7 +89,11 @@ const Hero = () => {
             href="#dashboard-preview"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.97 }}
-            className="border border-primary text-primary font-semibold px-8 py-3 rounded-full text-sm"
+            className="font-semibold px-8 py-3 rounded-full text-sm"
+            style={{
+              border: "1px solid hsl(38,100%,47%)",
+              color: "hsl(38,100%,47%)",
+            }}
           >
             Watch It Work
           </motion.a>
@@ -94,7 +109,11 @@ const Hero = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1.0 + i * 0.1, duration: 0.5 }}
-              className="glass text-xs text-muted-foreground px-4 py-2 rounded-full border border-border"
+              className="glass text-xs px-4 py-2 rounded-full"
+              style={{
+                border: "1px solid rgba(240,165,0,0.25)",
+                color: "hsl(38,100%,65%)",
+              }}
             >
               {b.emoji} {b.label}
             </motion.span>
@@ -109,7 +128,7 @@ const Hero = () => {
         transition={{ delay: 1.4 }}
         className="absolute bottom-8 left-1/2 -translate-x-1/2"
       >
-        <ChevronDown className="w-6 h-6 text-primary animate-bounce-slow" />
+        <ChevronDown className="w-6 h-6 animate-bounce-slow" style={{ color: "hsl(38,100%,47%)" }} />
       </motion.div>
     </section>
   );

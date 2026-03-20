@@ -344,6 +344,7 @@ const AppResearch = () => {
           queries={queries}
           onSubmit={handleVoiceSubmit}
           onGenerateThesis={handleGenerateThesis}
+          onPlotTrend={handlePlotTrend}
           voiceStateOverride={voiceStateOverride}
         />
       ) : (

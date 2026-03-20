@@ -85,7 +85,8 @@ const AppPortfolio = () => {
 
       <h3 style={{ color: "#8892A4", fontSize: 10, letterSpacing: "0.2em", marginTop: 32, marginBottom: 16 }}>TRADE HISTORY</h3>
       <TradeHistory trades={trades.slice(0, 20)} isLoading={isLoading} />
-    </div>
+      </div>
+    </>
   );
 };
 

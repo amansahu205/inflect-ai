@@ -23,7 +23,7 @@ const LogoStrip = () => (
               src={`https://img.logo.dev/${domain}?token=${LOGO_TOKEN}&size=48`}
               alt={domain.replace(".com", "")}
               loading="lazy"
-              className="w-12 h-12 opacity-80 hover:scale-[1.15] transition-all duration-300"
+              className="w-12 h-12 rounded-full opacity-80 hover:scale-[1.15] transition-all duration-300"
               style={{ filter: "drop-shadow(0 0 8px rgba(255,255,255,0.3))" }}
               onMouseEnter={(e) => { (e.target as HTMLImageElement).style.filter = "drop-shadow(0 0 12px rgba(0,200,255,0.6))"; }}
               onMouseLeave={(e) => { (e.target as HTMLImageElement).style.filter = "drop-shadow(0 0 8px rgba(255,255,255,0.3))"; }}

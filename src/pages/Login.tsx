@@ -57,16 +57,27 @@ const Login = () => {
     "w-full rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none transition-colors duration-200";
 
   return (
-    <div className="min-h-screen relative" style={{ background: "#080C14" }}>
+    <div className="min-h-screen relative overflow-hidden" style={{ background: "#080C14" }}>
+      {/* Video background */}
+      <video autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover z-0">
+        <source src="/videos/hero_bg.mp4" type="video/mp4" />
+      </video>
+      {/* Dark overlay */}
+      <div className="absolute inset-0 z-[1]" style={{ background: "rgba(8,12,20,0.88)" }} />
+      {/* Top fade */}
+      <div className="absolute top-0 left-0 right-0 z-[3]" style={{ height: 120, background: "linear-gradient(to bottom, #080C14, transparent)" }} />
+      {/* Bottom fade */}
+      <div className="absolute bottom-0 left-0 right-0 z-[3]" style={{ height: 120, background: "linear-gradient(to top, #080C14, transparent)" }} />
+
       <div
-        className="absolute w-full"
+        className="absolute w-full z-[2]"
         style={{ top: "50%", left: "50%", transform: "translate(-50%, -50%)", maxWidth: 420, padding: "0 16px" }}
       >
         <div className="flex justify-center mb-8">
           <img src={logo} alt="Inflect" style={{ height: 40 }} className="object-contain" />
         </div>
 
-        <div style={{ background: "#0F1820", border: "1px solid #1E2D40", borderRadius: 12, padding: 40 }}>
+        <div style={{ background: "#0F1820", border: "1px solid #1E2D40", borderRadius: 12, padding: 40, boxShadow: "0 0 40px rgba(240,165,0,0.15)" }}>
           <h1 className="font-display text-xl font-bold text-foreground text-center mb-8">Welcome back</h1>
 
           <form onSubmit={handleSubmit} className="space-y-5">

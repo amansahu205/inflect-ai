@@ -76,11 +76,11 @@ const Hero = () => {
         <motion.div {...fadeIn(0.8)} className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
           <motion.a
             href="#cta"
-            whileHover={{ scale: 1.05, boxShadow: "0 0 30px rgba(240,165,0,0.4)" }}
+            whileHover={{ scale: 1.05, boxShadow: "0 0 30px rgba(240,165,0,0.4)", background: "#B87800" }}
             whileTap={{ scale: 0.97 }}
             className="font-semibold px-8 py-3 rounded-full text-sm"
             style={{
-              background: "linear-gradient(135deg, hsl(38,100%,47%) 0%, hsl(15,90%,50%) 100%)",
+              background: "#F0A500",
               color: "#080C14",
             }}
           >

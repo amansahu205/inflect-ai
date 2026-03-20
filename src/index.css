@@ -13,14 +13,14 @@
     --popover: 207 33% 9%;
     --popover-foreground: 0 0% 100%;
 
-    --primary: 38 100% 50%;
+    --primary: 38 100% 47%;
     --primary-foreground: 216 45% 5%;
 
     --secondary: 157 100% 42%;
     --secondary-foreground: 216 45% 5%;
 
     --muted: 216 20% 14%;
-    --muted-foreground: 220 14% 59%;
+    --muted-foreground: 222 12% 62%;
 
     --accent: 207 33% 9%;
     --accent-foreground: 0 0% 100%;
@@ -30,11 +30,12 @@
 
     --border: 210 36% 18%;
     --input: 210 36% 18%;
-    --ring: 38 100% 50%;
+    --ring: 38 100% 47%;
 
     --radius: 0.75rem;
 
     --gold: 38 100% 47%;
+    --gold-deep: 36 100% 36%;
 
     --sidebar-background: 216 45% 4%;
     --sidebar-foreground: 220 14% 59%;

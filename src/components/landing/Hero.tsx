@@ -92,8 +92,8 @@ const Hero = () => {
             whileTap={{ scale: 0.97 }}
             className="font-semibold px-8 py-3 rounded-full text-sm"
             style={{
-              border: "1px solid hsl(38,100%,47%)",
-              color: "hsl(38,100%,47%)",
+              border: "1px solid #F0A500",
+              color: "#F0A500",
             }}
           >
             Watch It Work

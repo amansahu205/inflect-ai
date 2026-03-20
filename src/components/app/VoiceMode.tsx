@@ -58,6 +58,14 @@ const VoiceMode = ({ mode, onModeChange, queries, onSubmit, onGenerateThesis, on
     }
   }, [answerData, onGenerateThesis]);
 
+  const handlePlotTrend = useCallback(async () => {
+    const ticker = answerData?.ticker;
+    if (!ticker) return;
+    const metric = metricData?.metric || null;
+    const data = await onPlotTrend(ticker, metric);
+    if (data) setChartData(data);
+  }, [answerData, metricData, onPlotTrend]);
+
   const handleTextSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!textInput.trim()) return;

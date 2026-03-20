@@ -1,9 +1,5 @@
-import { lazy, Suspense } from "react";
 import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
-import { useIsMobile } from "@/hooks/use-mobile";
-
-const ParticleCanvas = lazy(() => import("./ParticleCanvas"));
 
 const fadeIn = (delay: number) => ({
   initial: { opacity: 0, y: 30 },

@@ -66,7 +66,8 @@ const Hero = () => {
 
         <motion.p
           {...fadeIn(0.6)}
-          className="text-muted-foreground text-base md:text-xl max-w-[600px] mx-auto mb-10"
+          className="text-base md:text-xl max-w-[600px] mx-auto mb-10"
+          style={{ color: "hsl(220, 14%, 78%)" }}
         >
           Research any Fortune 500 in seconds. Voice or type — verified by SEC filings and
           Wolfram|Alpha.

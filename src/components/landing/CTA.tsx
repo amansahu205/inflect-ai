@@ -8,10 +8,17 @@ const CTA = () => {
     <section
       id="cta"
       ref={ref}
-      className="py-32 px-6"
-      style={{ background: "linear-gradient(180deg, hsl(216,45%,5%) 0%, hsl(220,50%,8%) 100%)" }}
+      className="relative py-32 px-6 overflow-hidden"
     >
-      <div className="max-w-3xl mx-auto text-center">
+      <video
+        autoPlay muted loop playsInline
+        className="absolute top-0 left-0 w-full h-full object-cover z-0"
+      >
+        <source src="/videos/hero_bg.mp4" type="video/mp4" />
+      </video>
+      <div className="absolute inset-0 z-[1]" style={{ background: "rgba(8,12,20,0.88)" }} />
+
+      <div className="relative z-[2] max-w-3xl mx-auto text-center">
         <motion.h2
           initial={{ opacity: 0, y: 30 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}

@@ -36,6 +36,7 @@ const AnswerCard = ({ answer, source, citation, confidence, ticker, onGenerateTh
 
   return (
     <div
+      className="inflect-card"
       style={{
         background: "#0F1820",
         border: "1px solid #1E2D40",

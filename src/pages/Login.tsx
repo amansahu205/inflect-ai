@@ -2,6 +2,8 @@ import { useState, useRef } from "react";
 import { Link, useNavigate, useSearchParams, Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import MatrixCanvas from "@/components/auth/MatrixCanvas";
+import GlowInput from "@/components/auth/GlowInput";
+import "@/components/auth/GlowInput.css";
 import { useAuthStore } from "@/store/authStore";
 import logo from "@/assets/inflect-logo.png";
 
@@ -54,13 +56,11 @@ const Login = () => {
     navigate(redirectTo, { replace: true });
   };
 
-  const inputClass =
-    "w-full rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none transition-colors duration-200";
+  const hasError = !!error;
 
   return (
     <div className="min-h-screen relative overflow-hidden" style={{ background: "#080C14" }}>
       <MatrixCanvas />
-      {/* Vignette behind card */}
       <div className="fixed inset-0 z-[5] pointer-events-none" style={{ background: "radial-gradient(ellipse 60% 70% at 50% 50%, rgba(8,12,20,0.7) 0%, transparent 100%)" }} />
 
       <div
@@ -79,15 +79,13 @@ const Login = () => {
               <label style={{ color: "#8892A4", fontSize: 12, letterSpacing: "0.05em" }} className="block mb-1.5">
                 Email
               </label>
-              <input
+              <GlowInput
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className={inputClass}
-                style={{ background: "#080C14", border: "1px solid #1E2D40", borderRadius: 8, padding: "12px 16px", fontSize: 14 }}
-                onFocus={(e) => (e.target.style.borderColor = "#F0A500")}
-                onBlur={(e) => (e.target.style.borderColor = "#1E2D40")}
+                hasError={hasError}
+                isValid={email.includes("@") && email.includes(".")}
               />
             </div>
 
@@ -95,15 +93,13 @@ const Login = () => {
               <label style={{ color: "#8892A4", fontSize: 12, letterSpacing: "0.05em" }} className="block mb-1.5">
                 Password
               </label>
-              <input
+              <GlowInput
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"
-                className={inputClass}
-                style={{ background: "#080C14", border: "1px solid #1E2D40", borderRadius: 8, padding: "12px 16px", fontSize: 14 }}
-                onFocus={(e) => (e.target.style.borderColor = "#F0A500")}
-                onBlur={(e) => (e.target.style.borderColor = "#1E2D40")}
+                hasError={hasError}
+                isValid={password.length >= 8}
               />
             </div>
 
@@ -112,7 +108,7 @@ const Login = () => {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full cursor-pointer transition-colors duration-200"
+              className="glow-button w-full cursor-pointer transition-all duration-200"
               style={{
                 background: "#F0A500",
                 color: "#080C14",
@@ -121,9 +117,8 @@ const Login = () => {
                 padding: 12,
                 fontSize: 15,
                 opacity: submitting ? 0.7 : 1,
+                border: "none",
               }}
-              onMouseEnter={(e) => !submitting && (e.currentTarget.style.background = "#D4920A")}
-              onMouseLeave={(e) => (e.currentTarget.style.background = "#F0A500")}
             >
               {submitting ? "Logging in…" : "Log In"}
             </button>
@@ -152,7 +147,7 @@ const Login = () => {
               }
               navigate(redirectTo, { replace: true });
             }}
-            className="w-full cursor-pointer transition-colors duration-200"
+            className="glow-button w-full cursor-pointer transition-all duration-200"
             style={{
               background: "transparent",
               border: "1px solid #1E2D40",
@@ -161,14 +156,6 @@ const Login = () => {
               borderRadius: 8,
               padding: 12,
               fontSize: 14,
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = "#F0A500";
-              e.currentTarget.style.color = "#F0A500";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = "#1E2D40";
-              e.currentTarget.style.color = "#8892A4";
             }}
           >
             Try Demo Account

@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Link, useNavigate, Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import MatrixCanvas from "@/components/auth/MatrixCanvas";
+import GlowInput from "@/components/auth/GlowInput";
+import "@/components/auth/GlowInput.css";
 import { useAuthStore } from "@/store/authStore";
 import logo from "@/assets/inflect-logo.png";
 
@@ -71,13 +73,13 @@ const Register = () => {
     navigate("/app/research", { replace: true });
   };
 
-  const inputClass =
-    "w-full rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none transition-colors duration-200";
+  const emailValid = email.length > 0 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const passwordValid = password.length > 0 && passwordChecks.every((c) => c.test(password));
+  const confirmValid = confirm.length > 0 && password === confirm;
 
   return (
     <div className="min-h-screen relative overflow-hidden" style={{ background: "#080C14" }}>
       <MatrixCanvas />
-      {/* Vignette behind card */}
       <div className="fixed inset-0 z-[5] pointer-events-none" style={{ background: "radial-gradient(ellipse 60% 70% at 50% 50%, rgba(8,12,20,0.7) 0%, transparent 100%)" }} />
 
       <div
@@ -92,47 +94,49 @@ const Register = () => {
           <h1 className="font-display text-xl font-bold text-foreground text-center mb-8">Create your account</h1>
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            <Field label="Email" error={emailError}>
-              <input
+            <div>
+              <label style={{ color: "#8892A4", fontSize: 12, letterSpacing: "0.05em" }} className="block mb-1.5">Email</label>
+              <GlowInput
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 onBlur={validateEmail}
                 placeholder="you@example.com"
-                className={inputClass}
-                style={{ background: "#080C14", border: "1px solid #1E2D40", borderRadius: 8, padding: "12px 16px", fontSize: 14 }}
-                onFocus={(e) => (e.target.style.borderColor = "#F0A500")}
-                onBlurCapture={(e) => (e.target.style.borderColor = "#1E2D40")}
+                hasError={!!emailError}
+                isValid={emailValid}
               />
-            </Field>
+              {emailError && <p style={{ color: "#E05555", fontSize: 12, marginTop: 6 }}>{emailError}</p>}
+            </div>
 
-            <Field label="Password" errors={passwordErrors}>
-              <input
+            <div>
+              <label style={{ color: "#8892A4", fontSize: 12, letterSpacing: "0.05em" }} className="block mb-1.5">Password</label>
+              <GlowInput
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 onBlur={validatePassword}
                 placeholder="Min 8 chars, 1 number, 1 uppercase"
-                className={inputClass}
-                style={{ background: "#080C14", border: "1px solid #1E2D40", borderRadius: 8, padding: "12px 16px", fontSize: 14 }}
-                onFocus={(e) => (e.target.style.borderColor = "#F0A500")}
-                onBlurCapture={(e) => (e.target.style.borderColor = "#1E2D40")}
+                hasError={passwordErrors.length > 0}
+                isValid={passwordValid}
               />
-            </Field>
+              {passwordErrors.map((e) => (
+                <p key={e} style={{ color: "#E05555", fontSize: 12, marginTop: 6 }}>{e}</p>
+              ))}
+            </div>
 
-            <Field label="Confirm Password" error={confirmError}>
-              <input
+            <div>
+              <label style={{ color: "#8892A4", fontSize: 12, letterSpacing: "0.05em" }} className="block mb-1.5">Confirm Password</label>
+              <GlowInput
                 type="password"
                 value={confirm}
                 onChange={(e) => setConfirm(e.target.value)}
                 onBlur={validateConfirm}
                 placeholder="Re-enter password"
-                className={inputClass}
-                style={{ background: "#080C14", border: "1px solid #1E2D40", borderRadius: 8, padding: "12px 16px", fontSize: 14 }}
-                onFocus={(e) => (e.target.style.borderColor = "#F0A500")}
-                onBlurCapture={(e) => (e.target.style.borderColor = "#1E2D40")}
+                hasError={!!confirmError}
+                isValid={confirmValid}
               />
-            </Field>
+              {confirmError && <p style={{ color: "#E05555", fontSize: 12, marginTop: 6 }}>{confirmError}</p>}
+            </div>
 
             {error && error !== "already_exists" && (
               <p style={{ color: "#E05555", fontSize: 12 }}>{error}</p>
@@ -147,7 +151,7 @@ const Register = () => {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full cursor-pointer transition-colors duration-200"
+              className="glow-button w-full cursor-pointer transition-all duration-200"
               style={{
                 background: "#F0A500",
                 color: "#080C14",
@@ -156,9 +160,8 @@ const Register = () => {
                 padding: 12,
                 fontSize: 15,
                 opacity: submitting ? 0.7 : 1,
+                border: "none",
               }}
-              onMouseEnter={(e) => !submitting && (e.currentTarget.style.background = "#D4920A")}
-              onMouseLeave={(e) => (e.currentTarget.style.background = "#F0A500")}
             >
               {submitting ? "Creating account…" : "Create Account"}
             </button>
@@ -173,28 +176,5 @@ const Register = () => {
     </div>
   );
 };
-
-const Field = ({
-  label,
-  error,
-  errors,
-  children,
-}: {
-  label: string;
-  error?: string;
-  errors?: string[];
-  children: React.ReactNode;
-}) => (
-  <div>
-    <label style={{ color: "#8892A4", fontSize: 12, letterSpacing: "0.05em" }} className="block mb-1.5">
-      {label}
-    </label>
-    {children}
-    {error && <p style={{ color: "#E05555", fontSize: 12, marginTop: 6 }}>{error}</p>}
-    {errors?.map((e) => (
-      <p key={e} style={{ color: "#E05555", fontSize: 12, marginTop: 6 }}>{e}</p>
-    ))}
-  </div>
-);
 
 export default Register;

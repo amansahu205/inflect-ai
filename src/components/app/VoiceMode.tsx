@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import ModeToggle from "@/components/ui/ModeToggle";
 import OutputPanel from "./OutputPanel";
-import { EXAMPLE_QUERIES } from "@/utils/constants";
+import VoiceButton from "@/components/voice/VoiceButton";
+import type { VoiceState } from "@/components/voice/VoiceButton";
 
 interface VoiceModeProps {
   mode: "voice" | "chat";
@@ -13,6 +14,7 @@ interface VoiceModeProps {
 const VoiceMode = ({ mode, onModeChange, queries, onSubmit }: VoiceModeProps) => {
   const [textInput, setTextInput] = useState("");
   const [selectedOutput, setSelectedOutput] = useState<string | null>(null);
+  const [voiceState, setVoiceState] = useState<VoiceState>("idle");
 
   const handleTextSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,6 +30,19 @@ const VoiceMode = ({ mode, onModeChange, queries, onSubmit }: VoiceModeProps) =>
     const q = queries.find((q) => q.id === id);
     if (q) setSelectedOutput(q.response_text || "No response available.");
   };
+
+  const handleTranscript = useCallback(
+    (text: string) => {
+      setTextInput(text);
+      // Auto-submit transcript
+      onSubmit(text);
+    },
+    [onSubmit]
+  );
+
+  const handleStateChange = useCallback((state: VoiceState) => {
+    setVoiceState(state);
+  }, []);
 
   return (
     <div className="flex" style={{ height: "calc(100vh - 104px)" }}>
@@ -67,31 +82,15 @@ const VoiceMode = ({ mode, onModeChange, queries, onSubmit }: VoiceModeProps) =>
         )}
       </div>
 
-      {/* Center: Mic area */}
+      {/* Center: Voice area */}
       <div className="flex flex-col items-center justify-center gap-6" style={{ width: "40%" }}>
         <ModeToggle activeMode={mode} onChange={onModeChange} />
 
-        {/* Mic button */}
-        <button
-          className="flex items-center justify-center"
-          style={{
-            width: 80,
-            height: 80,
-            borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(240,165,0,0.2) 0%, rgba(240,165,0,0.05) 70%, transparent 100%)",
-            border: "2px solid #F0A500",
-            cursor: "pointer",
-            animation: "goldPulse 2s ease-in-out infinite",
-          }}
-        >
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
-            <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-            <line x1="12" x2="12" y1="19" y2="22" />
-          </svg>
-        </button>
-
-        <p style={{ color: "#8892A4", fontSize: 13 }}>Click to speak</p>
+        <VoiceButton
+          onTranscript={handleTranscript}
+          onStateChange={handleStateChange}
+          disabled={false}
+        />
 
         {/* Fallback text input */}
         <form onSubmit={handleTextSubmit} style={{ maxWidth: 280, width: "100%" }}>

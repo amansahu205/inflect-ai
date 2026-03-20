@@ -113,7 +113,7 @@ const ThesisCard = ({ thesis, isLoading }: ThesisCardProps) => {
       {/* Signal rows */}
       {signals.map((row, i) => {
         const s = signalStyle(row.signal);
-        const isInsufficient = !row.signal || row.signal === "INSUFFICIENT";
+        const isInsufficient = !row.reason;
         return (
           <div
             key={row.label}

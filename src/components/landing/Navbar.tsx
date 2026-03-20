@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Zap } from "lucide-react";
+import InflectLogo from "./InflectLogo";
 
 const navLinks = [
   { label: "Features", href: "#features" },
@@ -29,10 +29,7 @@ const Navbar = () => {
       }}
     >
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-        <a href="#" className="flex items-center gap-2">
-          <Zap className="w-5 h-5 text-primary" fill="currentColor" />
-          <span className="text-foreground font-bold text-lg tracking-tight">INFLECT</span>
-        </a>
+        <InflectLogo size={32} />
 
         <div className="hidden md:flex items-center gap-8">
           {navLinks.map((l) => (

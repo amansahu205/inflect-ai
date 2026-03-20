@@ -16,7 +16,7 @@ const CTA = () => {
       >
         <source src="/videos/cta_bg.mp4" type="video/mp4" />
       </video>
-      <div className="absolute inset-0 z-[1]" style={{ background: "rgba(8,12,20,0.88)" }} />
+      <div className="absolute inset-0 z-[1]" style={{ background: "rgba(8,12,20,0.55)" }} />
 
       <div className="relative z-[2] max-w-3xl mx-auto text-center">
         <motion.h2

@@ -11,6 +11,7 @@ import { executeTrade as executeTradeApi } from "@/api/trades";
 import VoiceMode from "@/components/app/VoiceMode";
 import ChatMode from "@/components/app/ChatMode";
 import TradeModal from "@/components/trading/TradeModal";
+import AmbientCanvas from "@/components/app/AmbientCanvas";
 import type { ChatMessage } from "@/components/chat/ChatThread";
 import type { AnswerResult, ThesisResult, TradeOrder, StockQuote, Query } from "@/types/api";
 import type { AnalyzeResult } from "@/api/query";

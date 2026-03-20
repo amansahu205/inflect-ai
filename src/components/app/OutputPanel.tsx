@@ -2,7 +2,8 @@ import { EXAMPLE_QUERIES } from "@/utils/constants";
 import AnswerCard from "@/components/research/AnswerCard";
 import StockCard from "@/components/charts/StockCard";
 import MetricCard from "@/components/charts/MetricCard";
-import type { AnswerResult, StockQuote } from "@/types/api";
+import ThesisCard from "@/components/research/ThesisCard";
+import type { AnswerResult, StockQuote, ThesisResult } from "@/types/api";
 
 interface MetricData {
   metric: string;
@@ -17,22 +18,22 @@ interface OutputPanelProps {
   answerData?: AnswerResult | null;
   stockQuote?: StockQuote | null;
   metricData?: MetricData | null;
+  thesisData?: ThesisResult | null;
+  thesisLoading?: boolean;
   onChipClick: (text: string) => void;
   onGenerateThesis?: () => void;
   onPlotTrend?: () => void;
 }
 
-const OutputPanel = ({ content, answerData, stockQuote, metricData, onChipClick, onGenerateThesis, onPlotTrend }: OutputPanelProps) => {
-  const hasData = answerData || stockQuote || metricData;
+const OutputPanel = ({ content, answerData, stockQuote, metricData, thesisData, thesisLoading, onChipClick, onGenerateThesis, onPlotTrend }: OutputPanelProps) => {
+  const hasData = answerData || stockQuote || metricData || thesisData || thesisLoading;
 
   return (
     <div className="h-full flex flex-col overflow-y-auto" style={{ padding: 24 }}>
       {hasData ? (
         <div className="flex flex-col gap-4">
-          {/* Price check → StockCard */}
           {stockQuote && <StockCard quote={stockQuote} />}
 
-          {/* Metric → MetricCard */}
           {metricData && (
             <MetricCard
               metric={metricData.metric}
@@ -45,7 +46,6 @@ const OutputPanel = ({ content, answerData, stockQuote, metricData, onChipClick,
             />
           )}
 
-          {/* AnswerCard (always if answerData) */}
           {answerData && (
             <AnswerCard
               key={answerData.answer}
@@ -57,6 +57,10 @@ const OutputPanel = ({ content, answerData, stockQuote, metricData, onChipClick,
               onGenerateThesis={onGenerateThesis || (() => {})}
               onPlotTrend={onPlotTrend || (() => {})}
             />
+          )}
+
+          {(thesisLoading || thesisData) && (
+            <ThesisCard thesis={thesisData!} isLoading={thesisLoading} />
           )}
         </div>
       ) : content ? (

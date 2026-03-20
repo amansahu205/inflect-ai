@@ -1,12 +1,15 @@
 import { useRef, useEffect, useState } from "react";
 import ChatBubble from "./ChatBubble";
-import type { AnswerResult } from "@/types/api";
+import ThesisCard from "@/components/research/ThesisCard";
+import type { AnswerResult, ThesisResult } from "@/types/api";
 
 export interface ChatMessage {
   id: string;
   role: "user" | "assistant";
   content: string;
   answerData?: AnswerResult;
+  thesisData?: ThesisResult;
+  thesisLoading?: boolean;
   timestamp: string;
 }
 
@@ -23,7 +26,6 @@ const ChatThread = ({ messages, isLoading }: ChatThreadProps) => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   };
 
-  // Auto-scroll on new messages
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
@@ -31,7 +33,6 @@ const ChatThread = ({ messages, isLoading }: ChatThreadProps) => {
     if (distFromBottom < 150) scrollToBottom();
   }, [messages.length, isLoading]);
 
-  // Track scroll position for "new response" button
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
@@ -47,13 +48,20 @@ const ChatThread = ({ messages, isLoading }: ChatThreadProps) => {
     <div ref={scrollRef} className="flex-1 overflow-y-auto relative" style={{ padding: 24 }}>
       <div className="flex flex-col gap-4">
         {messages.map((msg) => (
-          <ChatBubble
-            key={msg.id}
-            role={msg.role}
-            content={msg.content}
-            answerData={msg.answerData}
-            timestamp={msg.timestamp}
-          />
+          <div key={msg.id}>
+            <ChatBubble
+              role={msg.role}
+              content={msg.content}
+              answerData={msg.answerData}
+              timestamp={msg.timestamp}
+            />
+            {/* Inline ThesisCard in chat */}
+            {(msg.thesisLoading || msg.thesisData) && (
+              <div style={{ marginTop: 8, maxWidth: "85%" }}>
+                <ThesisCard thesis={msg.thesisData!} isLoading={msg.thesisLoading} />
+              </div>
+            )}
+          </div>
         ))}
         {isLoading && <ChatBubble role="assistant" content="" isLoading timestamp="" />}
       </div>
@@ -73,6 +81,7 @@ const ChatThread = ({ messages, isLoading }: ChatThreadProps) => {
             cursor: "pointer",
             zIndex: 10,
             fontWeight: 600,
+            border: "none",
           }}
           onMouseEnter={(e) => (e.currentTarget.style.background = "#D4920A")}
           onMouseLeave={(e) => (e.currentTarget.style.background = "#F0A500")}

@@ -3,7 +3,7 @@ import ModeToggle from "@/components/ui/ModeToggle";
 import OutputPanel from "./OutputPanel";
 import VoiceButton from "@/components/voice/VoiceButton";
 import type { VoiceState } from "@/components/voice/VoiceButton";
-import type { AnswerResult, StockQuote } from "@/types/api";
+import type { AnswerResult, StockQuote, ThesisResult } from "@/types/api";
 
 interface VoiceSubmitResult {
   answerData: AnswerResult;
@@ -16,17 +16,22 @@ interface VoiceModeProps {
   onModeChange: (mode: "voice" | "chat") => void;
   queries: Array<{ id: string; transcript: string; response_text: string }>;
   onSubmit: (text: string) => Promise<VoiceSubmitResult | void>;
+  onGenerateThesis: (ticker: string) => Promise<ThesisResult | null>;
 }
 
-const VoiceMode = ({ mode, onModeChange, queries, onSubmit }: VoiceModeProps) => {
+const VoiceMode = ({ mode, onModeChange, queries, onSubmit, onGenerateThesis }: VoiceModeProps) => {
   const [textInput, setTextInput] = useState("");
   const [selectedOutput, setSelectedOutput] = useState<string | null>(null);
   const [answerData, setAnswerData] = useState<AnswerResult | null>(null);
   const [stockQuote, setStockQuote] = useState<StockQuote | null>(null);
   const [metricData, setMetricData] = useState<{ metric: string; value: string; period: string; change?: string; changeDirection?: "up" | "down" } | null>(null);
+  const [thesisData, setThesisData] = useState<ThesisResult | null>(null);
+  const [thesisLoading, setThesisLoading] = useState(false);
   const [voiceState, setVoiceState] = useState<VoiceState>("idle");
 
   const submitQuery = async (text: string) => {
+    setThesisData(null);
+    setThesisLoading(false);
     const result = await onSubmit(text);
     if (result) {
       setAnswerData(result.answerData);
@@ -35,6 +40,18 @@ const VoiceMode = ({ mode, onModeChange, queries, onSubmit }: VoiceModeProps) =>
       setSelectedOutput(null);
     }
   };
+
+  const handleGenerateThesis = useCallback(async () => {
+    const ticker = answerData?.ticker;
+    if (!ticker) return;
+    setThesisLoading(true);
+    try {
+      const result = await onGenerateThesis(ticker);
+      if (result) setThesisData(result);
+    } finally {
+      setThesisLoading(false);
+    }
+  }, [answerData, onGenerateThesis]);
 
   const handleTextSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,6 +68,7 @@ const VoiceMode = ({ mode, onModeChange, queries, onSubmit }: VoiceModeProps) =>
     if (q) {
       setSelectedOutput(q.response_text || "No response available.");
       setAnswerData(null);
+      setThesisData(null);
     }
   };
 
@@ -107,14 +125,7 @@ const VoiceMode = ({ mode, onModeChange, queries, onSubmit }: VoiceModeProps) =>
       {/* Center: Voice area */}
       <div className="flex flex-col items-center justify-center gap-6" style={{ width: "40%" }}>
         <ModeToggle activeMode={mode} onChange={onModeChange} />
-
-        <VoiceButton
-          onTranscript={handleTranscript}
-          onStateChange={handleStateChange}
-          disabled={false}
-        />
-
-        {/* Fallback text input */}
+        <VoiceButton onTranscript={handleTranscript} onStateChange={handleStateChange} disabled={false} />
         <form onSubmit={handleTextSubmit} style={{ maxWidth: 280, width: "100%" }}>
           <input
             type="text"
@@ -143,8 +154,10 @@ const VoiceMode = ({ mode, onModeChange, queries, onSubmit }: VoiceModeProps) =>
           answerData={answerData}
           stockQuote={stockQuote}
           metricData={metricData}
+          thesisData={thesisData}
+          thesisLoading={thesisLoading}
           onChipClick={handleChipClick}
-          onGenerateThesis={() => {}}
+          onGenerateThesis={handleGenerateThesis}
           onPlotTrend={() => {}}
         />
       </div>

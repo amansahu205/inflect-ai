@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { Link, useNavigate, useSearchParams, Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import MatrixCanvas from "@/components/auth/MatrixCanvas";
 import { useAuthStore } from "@/store/authStore";
 import logo from "@/assets/inflect-logo.png";
 
@@ -58,16 +59,9 @@ const Login = () => {
 
   return (
     <div className="min-h-screen relative overflow-hidden" style={{ background: "#080C14" }}>
-      {/* Video background */}
-      <video autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover z-0">
-        <source src="/videos/hero_bg.mp4" type="video/mp4" />
-      </video>
-      {/* Dark overlay */}
-      <div className="absolute inset-0 z-[1]" style={{ background: "rgba(8,12,20,0.88)" }} />
-      {/* Top fade */}
-      <div className="absolute top-0 left-0 right-0 z-[3]" style={{ height: 120, background: "linear-gradient(to bottom, #080C14, transparent)" }} />
-      {/* Bottom fade */}
-      <div className="absolute bottom-0 left-0 right-0 z-[3]" style={{ height: 120, background: "linear-gradient(to top, #080C14, transparent)" }} />
+      <MatrixCanvas />
+      {/* Vignette behind card */}
+      <div className="fixed inset-0 z-[5] pointer-events-none" style={{ background: "radial-gradient(ellipse 60% 70% at 50% 50%, rgba(8,12,20,0.7) 0%, transparent 100%)" }} />
 
       <div
         className="absolute w-full z-[2]"
@@ -77,7 +71,7 @@ const Login = () => {
           <img src={logo} alt="Inflect" style={{ height: 40 }} className="object-contain" />
         </div>
 
-        <div style={{ background: "#0F1820", border: "1px solid #1E2D40", borderRadius: 12, padding: 40, boxShadow: "0 0 40px rgba(240,165,0,0.15)" }}>
+        <div style={{ background: "#0F1820", border: "1px solid rgba(240,165,0,0.2)", borderRadius: 12, padding: 40, boxShadow: "0 0 0 1px rgba(240,165,0,0.2), 0 24px 80px rgba(0,0,0,0.6), 0 0 120px rgba(240,165,0,0.05)" }}>
           <h1 className="font-display text-xl font-bold text-foreground text-center mb-8">Welcome back</h1>
 
           <form onSubmit={handleSubmit} className="space-y-5">

@@ -25,7 +25,7 @@ const VoiceShowcase = () => {
               className="w-full block"
               style={{ marginBottom: -40 }}
             >
-              <source src="/videos/voice_button.mp4" type="video/mp4" />
+              <source src="/videos/voice_showcase.mp4" type="video/mp4" />
             </video>
           </motion.div>
         </motion.div>

@@ -68,9 +68,9 @@ const Features = () => {
                 borderColor: card.accent,
                 boxShadow: `0 0 30px ${card.accent}26`,
               }}
-              className="glass rounded-2xl border border-border p-8 transition-colors"
+              className="glass rounded-2xl border border-border pt-6 px-8 pb-8 transition-colors"
             >
-              <div className="w-16 h-16 mb-6 flex items-center justify-center">
+              <div className="w-10 h-10 mb-2 flex items-center justify-center">
                 <card.icon size={40} color={card.iconColor} />
               </div>
               <h3 className="font-display font-semibold text-foreground text-xl mb-3">{card.title}</h3>

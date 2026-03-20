@@ -42,7 +42,7 @@ const CTA = () => {
         >
           <motion.a
             href="#"
-            whileHover={{ scale: 1.05, boxShadow: "0 0 40px rgba(0,200,255,0.4)" }}
+            whileHover={{ scale: 1.05, boxShadow: "0 0 40px rgba(240,165,0,0.4)" }}
             whileTap={{ scale: 0.97 }}
             className="inline-block bg-primary text-primary-foreground font-semibold px-10 py-4 rounded-full text-base"
           >

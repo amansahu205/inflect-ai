@@ -18,7 +18,7 @@ const VoiceShowcase = () => {
             animate={{ scale: [1, 1.02, 1] }}
             transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
             className="rounded-2xl overflow-hidden"
-            style={{ boxShadow: "0 0 80px rgba(0,200,255,0.3)", marginBottom: -40 }}
+            style={{ boxShadow: "0 0 80px rgba(240,165,0,0.3)", marginBottom: -40 }}
           >
             <video
               autoPlay muted loop playsInline

@@ -13,8 +13,8 @@ const DashboardPreview = () => {
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="rounded-2xl overflow-hidden"
           style={{
-            border: "1px solid rgba(0,200,255,0.2)",
-            boxShadow: "0 0 60px rgba(0,200,255,0.1)",
+            border: "1px solid rgba(240,165,0,0.2)",
+            boxShadow: "0 0 60px rgba(240,165,0,0.1)",
           }}
         >
           <video

@@ -24,7 +24,7 @@ const Navbar = () => {
       transition={{ duration: 0.6, ease: "easeOut" }}
       className="fixed top-0 left-0 right-0 z-50 glass-nav"
       style={{
-        borderBottom: `1px solid rgba(0,200,255,${scrolled ? 0.3 : 0.1})`,
+        borderBottom: `1px solid rgba(240,165,0,${scrolled ? 0.3 : 0.1})`,
         transition: "border-color 0.3s ease",
       }}
     >

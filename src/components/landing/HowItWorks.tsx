@@ -48,7 +48,7 @@ const HowItWorks = () => {
             animate={inView ? { scaleX: 1 } : {}}
             transition={{ duration: 1.2, delay: 0.3, ease: "easeOut" }}
             className="hidden md:block absolute top-12 left-[16%] right-[16%] h-0 origin-left"
-            style={{ borderTop: "2px dashed rgba(0,200,255,0.3)" }}
+            style={{ borderTop: "2px dashed rgba(240,165,0,0.3)" }}
           />
 
           {steps.map((step, i) => (

@@ -6,8 +6,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import VoiceMode from "@/components/app/VoiceMode";
 import ChatMode from "@/components/app/ChatMode";
+import TradeModal from "@/components/trading/TradeModal";
 import type { ChatMessage } from "@/components/chat/ChatThread";
-import type { AnswerResult, ThesisResult } from "@/types/api";
+import type { AnswerResult, ThesisResult, TradeOrder } from "@/types/api";
 
 interface QueryRow {
   id: string;
@@ -24,12 +25,28 @@ const mockThesis = (ticker: string): ThesisResult => ({
   confidence: "HIGH",
 });
 
+const detectTradeIntent = (text: string): { side: "buy" | "sell"; ticker: string | null; quantity: number | null } | null => {
+  const lower = text.toLowerCase();
+  const buyMatch = /\b(buy|purchase|get)\b/i.test(lower);
+  const sellMatch = /\b(sell|dump|exit)\b/i.test(lower);
+  if (!buyMatch && !sellMatch) return null;
+  const ticker = text.match(/\b([A-Z]{1,5})\b/)?.[1] || null;
+  const qtyMatch = text.match(/(\d+)\s*(shares?|stocks?)?/i);
+  const quantity = qtyMatch ? parseInt(qtyMatch[1], 10) : null;
+  return { side: buyMatch ? "buy" : "sell", ticker, quantity };
+};
+
 const AppResearch = () => {
   const { user } = useAuthStore();
   const { mode, setMode } = useSessionStore();
-  const { setBuyingPower, setTotalValue } = usePortfolioStore();
+  const { buyingPower, setBuyingPower, setTotalValue } = usePortfolioStore();
   const [queries, setQueries] = useState<QueryRow[]>([]);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+
+  // Trade modal state
+  const [pendingOrder, setPendingOrder] = useState<TradeOrder | null>(null);
+  const [tradeLoading, setTradeLoading] = useState(false);
+  const [fillResult, setFillResult] = useState<{ fill_price: number } | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -71,6 +88,25 @@ const AppResearch = () => {
     [user, setMode]
   );
 
+  const tryCreateOrder = useCallback((text: string): string | null => {
+    const trade = detectTradeIntent(text);
+    if (!trade) return null;
+    if (!trade.ticker) return "Which ticker would you like to trade?";
+    if (!trade.quantity) return `How many shares of ${trade.ticker} would you like to ${trade.side}?`;
+
+    const estPrice = 189.5; // Mock — replace with real quote
+    const order: TradeOrder = {
+      ticker: trade.ticker,
+      side: trade.side,
+      quantity: trade.quantity,
+      order_type: "market",
+      estimated_price: estPrice,
+      estimated_total: estPrice * trade.quantity,
+    };
+    setPendingOrder(order);
+    return null; // No clarifying question needed
+  }, []);
+
   const handleVoiceSubmit = useCallback(
     async (text: string) => {
       const responseText = `Analysis for "${text}" — placeholder. Wire up your FastAPI backend.`;
@@ -79,9 +115,12 @@ const AppResearch = () => {
       const ticker = text.match(/\b[A-Z]{1,5}\b/)?.[0] || null;
       const isMetric = /margin|revenue|earnings|eps|ratio|growth/i.test(lowerText);
 
+      // Check for trade intent
+      const clarify = tryCreateOrder(text);
+
       const answerData: AnswerResult = {
-        answer: responseText,
-        intent_type: isPriceCheck ? "price_check" : "research",
+        answer: clarify || responseText,
+        intent_type: clarify !== null && !clarify ? "trade" : isPriceCheck ? "price_check" : "research",
         ticker,
         confidence: "HIGH",
         source: isPriceCheck ? "MARKET_DATA" : isMetric ? "SEC_FILING" : "LLM",
@@ -103,7 +142,7 @@ const AppResearch = () => {
       if (user) {
         const { data } = await supabase
           .from("queries")
-          .insert({ user_id: user.id, transcript: text, response_text: responseText, mode: "voice", intent_type: answerData.intent_type })
+          .insert({ user_id: user.id, transcript: text, response_text: clarify || responseText, mode: "voice", intent_type: answerData.intent_type })
           .select("id, transcript, response_text")
           .single();
         if (data) setQueries((prev) => [data as QueryRow, ...prev]);
@@ -111,23 +150,27 @@ const AppResearch = () => {
 
       return { answerData, stockQuote, metricData };
     },
-    [user]
+    [user, tryCreateOrder]
   );
 
   const handleChatSubmit = useCallback(
     async (text: string): Promise<string> => {
       if (!user) return "Not authenticated.";
+
+      // Check trade intent
+      const clarify = tryCreateOrder(text);
+      if (clarify) return clarify;
+
       const responseText = `Analysis for "${text}" — placeholder. Wire up your FastAPI backend.`;
       await supabase.from("queries").insert({ user_id: user.id, transcript: text, response_text: responseText, mode: "chat", intent_type: "research" });
       return responseText;
     },
-    [user]
+    [user, tryCreateOrder]
   );
 
   const handleGenerateThesis = useCallback(
     async (ticker: string): Promise<ThesisResult | null> => {
       try {
-        // Mock — replace with: POST ${import.meta.env.VITE_API_URL}/api/v1/thesis/generate
         await new Promise((r) => setTimeout(r, 1500));
         return mockThesis(ticker);
       } catch {
@@ -138,6 +181,59 @@ const AppResearch = () => {
     []
   );
 
+  const handleTradeConfirm = useCallback(async () => {
+    if (!pendingOrder || !user) return;
+
+    // If already filled, just close
+    if (fillResult) {
+      setPendingOrder(null);
+      setFillResult(null);
+      setTradeLoading(false);
+      toast({ title: "Trade Complete", description: `${pendingOrder.quantity} ${pendingOrder.ticker} filled at ${fillResult.fill_price.toFixed(2)}` });
+      return;
+    }
+
+    setTradeLoading(true);
+    try {
+      // Mock execution — replace with POST to VITE_API_URL/api/v1/trades/execute
+      await new Promise((r) => setTimeout(r, 1500));
+      const mockFillPrice = pendingOrder.estimated_price * (1 + (Math.random() - 0.5) * 0.001);
+      const total = mockFillPrice * pendingOrder.quantity;
+
+      // Update buying power
+      const newBP = pendingOrder.side === "buy" ? buyingPower - total : buyingPower + total;
+      setBuyingPower(newBP);
+
+      // Persist to DB
+      await supabase.from("trades").insert({
+        user_id: user.id,
+        ticker: pendingOrder.ticker,
+        side: pendingOrder.side,
+        quantity: pendingOrder.quantity,
+        fill_price: mockFillPrice,
+        total_value: total,
+        status: "filled",
+      });
+
+      if (user) {
+        await supabase.from("profiles").update({ buying_power: newBP }).eq("id", user.id);
+      }
+
+      setFillResult({ fill_price: mockFillPrice });
+      // Auto-close handled by TradeModal's useEffect
+    } catch {
+      setPendingOrder(null);
+      setTradeLoading(false);
+      toast({ title: "Error", description: "Order failed. Try again.", variant: "destructive" });
+    }
+  }, [pendingOrder, user, fillResult, buyingPower, setBuyingPower]);
+
+  const handleTradeCancel = useCallback(() => {
+    setPendingOrder(null);
+    setTradeLoading(false);
+    setFillResult(null);
+  }, []);
+
   const handleNewMessage = useCallback((userMsg: ChatMessage, assistantMsg: ChatMessage) => {
     setChatMessages((prev) => [...prev, userMsg, assistantMsg]);
   }, []);
@@ -146,10 +242,22 @@ const AppResearch = () => {
     setChatMessages((prev) => prev.map((m) => (m.id === id ? { ...m, ...update } : m)));
   }, []);
 
-  return mode === "voice" ? (
-    <VoiceMode mode={mode} onModeChange={handleModeChange} queries={queries} onSubmit={handleVoiceSubmit} onGenerateThesis={handleGenerateThesis} />
-  ) : (
-    <ChatMode mode={mode} onModeChange={handleModeChange} onSubmit={handleChatSubmit} messages={chatMessages} onNewMessage={handleNewMessage} onGenerateThesis={handleGenerateThesis} onUpdateMessage={handleUpdateMessage} />
+  return (
+    <>
+      {mode === "voice" ? (
+        <VoiceMode mode={mode} onModeChange={handleModeChange} queries={queries} onSubmit={handleVoiceSubmit} onGenerateThesis={handleGenerateThesis} />
+      ) : (
+        <ChatMode mode={mode} onModeChange={handleModeChange} onSubmit={handleChatSubmit} messages={chatMessages} onNewMessage={handleNewMessage} onGenerateThesis={handleGenerateThesis} onUpdateMessage={handleUpdateMessage} />
+      )}
+
+      <TradeModal
+        order={pendingOrder}
+        onConfirm={handleTradeConfirm}
+        onCancel={handleTradeCancel}
+        isLoading={tradeLoading}
+        fillResult={fillResult}
+      />
+    </>
   );
 };
 

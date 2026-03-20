@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuthStore } from "@/store/authStore";
 import { supabase } from "@/integrations/supabase/client";
 import AppNavbar from "@/components/app/AppNavbar";
 import BottomBar from "@/components/app/BottomBar";

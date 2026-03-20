@@ -1,8 +1,10 @@
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuthStore } from "@/store/authStore";
+import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 
 const AppPortfolio = () => {
-  const { user, signOut } = useAuth();
+  const { user } = useAuthStore();
+  const signOut = async () => { await supabase.auth.signOut(); };
   const navigate = useNavigate();
 
   const handleSignOut = async () => {

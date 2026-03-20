@@ -12,7 +12,7 @@ const Footer = () => (
     <div className="max-w-6xl mx-auto grid md:grid-cols-6 gap-10">
       <div className="md:col-span-2">
         <div className="mb-3">
-          <InflectLogo size={28} />
+          <InflectLogo size={40} />
         </div>
         <p className="text-muted-foreground text-sm">Find the inflection point.</p>
       </div>

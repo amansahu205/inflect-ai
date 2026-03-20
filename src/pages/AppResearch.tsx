@@ -18,6 +18,7 @@ const AppResearch = () => {
   const { mode, setMode } = useSessionStore();
   const { setBuyingPower, setTotalValue } = usePortfolioStore();
   const [queries, setQueries] = useState<QueryRow[]>([]);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
 
   useEffect(() => {
     if (!user) return;

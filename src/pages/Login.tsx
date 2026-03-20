@@ -124,6 +124,51 @@ const Login = () => {
             </button>
           </form>
 
+          <div className="flex items-center gap-3 my-5">
+            <div className="flex-1 h-px" style={{ background: "#1E2D40" }} />
+            <span style={{ color: "#8892A4", fontSize: 11 }}>or</span>
+            <div className="flex-1 h-px" style={{ background: "#1E2D40" }} />
+          </div>
+
+          <button
+            type="button"
+            disabled={submitting}
+            onClick={async () => {
+              setError("");
+              setSubmitting(true);
+              const { error: authError } = await supabase.auth.signInWithPassword({
+                email: "demo@inflect.app",
+                password: "Demo1234",
+              });
+              setSubmitting(false);
+              if (authError) {
+                setError("Demo login failed. Try again.");
+                return;
+              }
+              navigate(redirectTo, { replace: true });
+            }}
+            className="w-full cursor-pointer transition-colors duration-200"
+            style={{
+              background: "transparent",
+              border: "1px solid #1E2D40",
+              color: "#8892A4",
+              fontWeight: 600,
+              borderRadius: 8,
+              padding: 12,
+              fontSize: 14,
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = "#F0A500";
+              e.currentTarget.style.color = "#F0A500";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = "#1E2D40";
+              e.currentTarget.style.color = "#8892A4";
+            }}
+          >
+            Try Demo Account
+          </button>
+
           <p className="text-center text-sm mt-6" style={{ color: "#8892A4" }}>
             Don't have an account?{" "}
             <Link to="/register" className="font-medium" style={{ color: "#F0A500" }}>Sign up →</Link>

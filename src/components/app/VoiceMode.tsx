@@ -28,7 +28,12 @@ const VoiceMode = ({ mode, onModeChange, queries, onSubmit }: VoiceModeProps) =>
 
   const submitQuery = async (text: string) => {
     const result = await onSubmit(text);
-    if (result) setAnswerData(result);
+    if (result) {
+      setAnswerData(result.answerData);
+      setStockQuote(result.stockQuote || null);
+      setMetricData(result.metricData || null);
+      setSelectedOutput(null);
+    }
   };
 
   const handleTextSubmit = async (e: React.FormEvent) => {

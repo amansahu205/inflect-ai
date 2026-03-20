@@ -14,7 +14,7 @@ const CTA = () => {
         autoPlay muted loop playsInline
         className="absolute top-0 left-0 w-full h-full object-cover z-0"
       >
-        <source src="/videos/hero_bg.mp4" type="video/mp4" />
+        <source src="/videos/cta_bg.mp4" type="video/mp4" />
       </video>
       <div className="absolute inset-0 z-[1]" style={{ background: "rgba(8,12,20,0.88)" }} />
 

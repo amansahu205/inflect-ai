@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate, Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import MatrixCanvas from "@/components/auth/MatrixCanvas";
 import { useAuthStore } from "@/store/authStore";
 import logo from "@/assets/inflect-logo.png";
 

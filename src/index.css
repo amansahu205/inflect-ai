@@ -226,4 +226,43 @@
     transform: translateY(-2px);
     box-shadow: 0 8px 32px rgba(240, 165, 0, 0.1);
   }
+  /* JARVIS Dashboard animations */
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
+  @keyframes orbPulse {
+    0%, 100% { box-shadow: 0 0 20px rgba(240,165,0,0.3); }
+    50% { box-shadow: 0 0 40px rgba(240,165,0,0.6), 0 0 80px rgba(240,165,0,0.2); }
+  }
+
+  @keyframes statusPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  @keyframes jarvisRingSpin1 {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  @keyframes jarvisRingSpin2 {
+    from { transform: rotate(360deg); }
+    to { transform: rotate(0deg); }
+  }
+
+  @keyframes jarvisRingSpin3 {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  @keyframes scanLine {
+    0% { top: 0; }
+    100% { top: 100%; }
+  }
+
+  .jarvis-ellipsis {
+    animation: blink 1.5s infinite;
+  }
 }

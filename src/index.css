@@ -100,4 +100,26 @@
   .animate-bounce-slow {
     animation: bounce-slow 2s ease-in-out infinite;
   }
+
+
+  .video-section-fade::before,
+  .video-section-fade::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 120px;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .video-section-fade::before {
+    top: 0;
+    background: linear-gradient(to bottom, hsl(216 45% 5%) 0%, transparent 100%);
+  }
+
+  .video-section-fade::after {
+    bottom: 0;
+    background: linear-gradient(to top, hsl(216 45% 5%) 0%, transparent 100%);
+  }
 }

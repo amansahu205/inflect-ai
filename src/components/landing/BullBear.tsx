@@ -11,7 +11,7 @@ const BullBear = () => {
   const [ref, inView] = useInView({ triggerOnce: true, rootMargin: "-100px" });
 
   return (
-    <section className="relative min-h-[80vh] flex items-center px-6 overflow-hidden" ref={ref}>
+    <section className="relative min-h-[80vh] flex items-center px-6 overflow-hidden video-section-fade" ref={ref}>
       {/* Video bg */}
       <video
         autoPlay
@@ -20,7 +20,7 @@ const BullBear = () => {
         playsInline
         className="absolute inset-0 w-full h-full object-cover"
       >
-        <source src="/videos/hero_bg.mp4" type="video/mp4" />
+        <source src="/videos/bull_bear.mp4" type="video/mp4" />
       </video>
       <div className="absolute inset-0" style={{ background: "rgba(8,12,20,0.75)" }} />
 

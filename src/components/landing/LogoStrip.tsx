@@ -2,8 +2,9 @@ const companies = [
   "apple.com", "nvidia.com", "tesla.com", "microsoft.com",
   "amazon.com", "google.com", "meta.com", "netflix.com",
   "visa.com", "jpmorgan.com", "goldmansachs.com",
-  "berkshirehathaway.com", "walmart.com", "exxonmobil.com",
-  "johnson.com", "unitedhealth.com", "samsung.com",
+  "walmart.com", "disney.com", "amd.com", "intel.com",
+  "salesforce.com", "oracle.com", "adobe.com", "spotify.com",
+  "paypal.com", "airbnb.com", "uber.com", "coinbase.com",
 ];
 
 const LOGO_TOKEN = "pk_AH1Nlal1QY6dlBilaz85Bg";

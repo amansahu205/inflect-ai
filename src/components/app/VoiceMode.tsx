@@ -36,6 +36,7 @@ const VoiceMode = ({ mode, onModeChange, queries, onSubmit, onGenerateThesis, on
   const submitQuery = async (text: string) => {
     setThesisData(null);
     setThesisLoading(false);
+    setChartData(null);
     const result = await onSubmit(text);
     if (result) {
       setAnswerData(result.answerData);

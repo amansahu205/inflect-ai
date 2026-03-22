@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useAuthStore } from "@/store/authStore";
 import { useSessionStore } from "@/store/sessionStore";
 import { usePortfolioStore } from "@/store/portfolioStore";
@@ -11,20 +11,17 @@ import { executeTrade as executeTradeApi } from "@/api/trades";
 import useVoiceRecorder from "@/hooks/useVoiceRecorder";
 import { useInflectToast } from "@/components/ui/InflectToast";
 import TradeModal from "@/components/trading/TradeModal";
-import ResearchSidebar from "@/components/research/ResearchSidebar";
-import AnalysisOutputCard from "@/components/research/AnalysisOutputCard";
-import VisualizationCard from "@/components/research/VisualizationCard";
-import PortfolioWidget from "@/components/research/PortfolioWidget";
-import MarketDataWidget from "@/components/research/MarketDataWidget";
 import ResearchPromptBar from "@/components/research/ResearchPromptBar";
-import JarvisMetricsRow from "@/components/jarvis/JarvisMetricsRow";
+import ResearchVisualizationsPanel from "@/components/research/ResearchVisualizationsPanel";
+import ChatMessage, { type ChatMsg } from "@/components/research/ChatMessage";
+import VoiceOverlay from "@/components/research/VoiceOverlay";
+import { EXAMPLE_QUERIES } from "@/utils/constants";
 import type { AnswerResult, ThesisResult, TradeOrder, StockQuote, Query } from "@/types/api";
 import type { AnalyzeResult } from "@/api/query";
 import type { VoiceState } from "@/components/voice/VoiceButton";
 
 const USE_BACKEND = true;
 
-// --- Mock fallbacks ---
 const mockAnalyze = (text: string): AnalyzeResult => {
   const lower = text.toLowerCase();
   const isPriceCheck = /what('s| is).*trading|price of|quote/i.test(lower);
@@ -85,23 +82,27 @@ const AppResearch = () => {
   const { buyingPower, setBuyingPower, setTotalValue } = usePortfolioStore();
   const { showToast } = useInflectToast();
 
-  const [queries, setQueries] = useState<Query[]>([]);
+  const [messages, setMessages] = useState<ChatMsg[]>([]);
   const [pendingOrder, setPendingOrder] = useState<TradeOrder | null>(null);
   const [tradeLoading, setTradeLoading] = useState(false);
   const [fillResult, setFillResult] = useState<{ fill_price: number } | null>(null);
   const [voiceState, setVoiceState] = useState<VoiceState>("idle");
 
-  const [selectedOutput, setSelectedOutput] = useState<string | null>(null);
+  // Right panel state
   const [answerData, setAnswerData] = useState<AnswerResult | null>(null);
   const [stockQuote, setStockQuote] = useState<StockQuote | null>(null);
   const [metricData, setMetricData] = useState<{ metric: string; value: string; period: string; change?: string; changeDirection?: "up" | "down" } | null>(null);
   const [thesisData, setThesisData] = useState<ThesisResult | null>(null);
   const [thesisLoading, setThesisLoading] = useState(false);
   const [chartData, setChartData] = useState<any>(null);
-  const [activeQueryId, setActiveQueryId] = useState<string | null>(null);
-  const [latencyMs, setLatencyMs] = useState<number | null>(null);
 
+  const chatEndRef = useRef<HTMLDivElement>(null);
   const { startRecording, stopRecording, audioBlob, isRecording, audioLevel } = useVoiceRecorder();
+
+  // Auto-scroll chat
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   useEffect(() => {
     if (!user) return;
@@ -111,16 +112,7 @@ const AppResearch = () => {
     })();
   }, [user, setBuyingPower, setTotalValue]);
 
-  useEffect(() => {
-    if (!user) return;
-    (async () => {
-      const { data } = await supabase.from("queries").select("*").eq("user_id", user.id)
-        .gte("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
-        .order("created_at", { ascending: false }).limit(20);
-      if (data) setQueries(data as unknown as Query[]);
-    })();
-  }, [user]);
-
+  // Silence detection
   useEffect(() => {
     if (!isRecording) return;
     if (audioLevel < 0.02) {
@@ -129,6 +121,7 @@ const AppResearch = () => {
     }
   }, [audioLevel, isRecording, stopRecording]);
 
+  // Transcribe audio
   useEffect(() => {
     if (!audioBlob || voiceState !== "processing") return;
     let cancelled = false;
@@ -156,8 +149,12 @@ const AppResearch = () => {
     }
   }, [voiceState, startRecording, stopRecording, showToast]);
 
+  const handleVoiceCancel = useCallback(() => {
+    if (isRecording) stopRecording();
+    setVoiceState("idle");
+  }, [isRecording, stopRecording]);
+
   const runPipeline = useCallback(async (text: string) => {
-    const start = performance.now();
     let result: AnalyzeResult;
     try {
       result = USE_BACKEND ? await analyzeQuery(text, { ticker: sessionTicker, timeframe: sessionTimeframe }) : mockAnalyze(text);
@@ -177,25 +174,38 @@ const AppResearch = () => {
     }
 
     if (user) {
-      const { data } = await supabase.from("queries").insert({ user_id: user.id, session_id: sessionId, transcript: text, intent_type: result.intent_type, response_text: result.answer, ticker: result.ticker, mode: "voice" }).select("*").single();
-      if (data) setQueries((prev) => [data as unknown as Query, ...prev]);
+      await supabase.from("queries").insert({ user_id: user.id, session_id: sessionId, transcript: text, intent_type: result.intent_type, response_text: result.answer, ticker: result.ticker, mode: "chat" });
     }
 
     const answerResult: AnswerResult = { answer: result.answer, intent_type: result.intent_type, ticker: result.ticker, confidence: result.confidence_level, source: result.source as AnswerResult["source"], citation: result.citation };
     addAnswer(answerResult);
-    setLatencyMs(Math.round(performance.now() - start));
-    return { result, quote, metricData: metric };
+    return { result, quote, metricData: metric, answerResult };
   }, [user, sessionTicker, sessionTimeframe, setTicker, addAnswer, sessionId]);
 
   const submitQuery = useCallback(async (text: string) => {
-    setThesisData(null); setThesisLoading(false); setChartData(null); setActiveQueryId(null);
-    const { result, quote, metricData: md } = await runPipeline(text);
+    // Add user message
+    const userMsg: ChatMsg = { id: crypto.randomUUID(), role: "user", text };
+    setMessages(prev => [...prev, userMsg]);
 
-    const ad: AnswerResult = { answer: result.answer, intent_type: result.intent_type, ticker: result.ticker, confidence: result.confidence_level, source: result.source as AnswerResult["source"], citation: result.citation };
-    setAnswerData(ad);
+    const { result, quote, metricData: md, answerResult } = await runPipeline(text);
+
+    // Update right panel
+    setAnswerData(answerResult);
     setStockQuote(quote);
     setMetricData(md);
-    setSelectedOutput(null);
+
+    // Add bot message
+    const botMsg: ChatMsg = {
+      id: crypto.randomUUID(),
+      role: "bot",
+      text: result.answer,
+      answerData: answerResult,
+      stockQuote: quote,
+      metricData: md,
+      onGenerateThesis: result.ticker ? () => handleGenerateThesis(result.ticker!) : undefined,
+      onPlotTrend: result.ticker ? () => handlePlotTrend(result.ticker!) : undefined,
+    };
+    setMessages(prev => [...prev, botMsg]);
 
     if (result.intent_type === "trade") {
       const trade = detectTradeIntent(text);
@@ -211,47 +221,36 @@ const AppResearch = () => {
     speakText(ttsText);
   }, [runPipeline]);
 
-  const handleTextSubmit = useCallback((text: string) => {
-    if (!text.trim()) return;
-    submitQuery(text);
-  }, [submitQuery]);
-
-  const handleGenerateThesis = useCallback(async () => {
-    const ticker = answerData?.ticker;
-    if (!ticker) return;
+  const handleGenerateThesis = useCallback(async (ticker?: string) => {
+    const t = ticker || answerData?.ticker;
+    if (!t) return;
     setThesisLoading(true);
     try {
       if (USE_BACKEND) {
         const { apiCall } = await import("@/api/client");
-        const result = await apiCall<ThesisResult>("/api/v1/thesis/generate", { method: "POST", body: JSON.stringify({ ticker }) });
+        const result = await apiCall<ThesisResult>("/api/v1/thesis/generate", { method: "POST", body: JSON.stringify({ ticker: t }) });
         if (result) setThesisData(result);
       } else {
-        await new Promise((r) => setTimeout(r, 1500));
-        setThesisData(mockThesis(ticker));
+        await new Promise(r => setTimeout(r, 1500));
+        setThesisData(mockThesis(t));
       }
     } catch { toast({ title: "Error", description: "Couldn't generate thesis", variant: "destructive" }); }
     finally { setThesisLoading(false); }
   }, [answerData]);
 
-  const handlePlotTrend = useCallback(async () => {
-    const ticker = answerData?.ticker;
-    if (!ticker) return;
+  const handlePlotTrend = useCallback(async (ticker?: string) => {
+    const t = ticker || answerData?.ticker;
+    if (!t) return;
     try {
-      const data = await getChartData(ticker, metricData?.metric || null, null);
+      const data = await getChartData(t, metricData?.metric || null, null);
       if (data) setChartData(data);
     } catch { toast({ title: "Error", description: "Couldn't load chart data", variant: "destructive" }); }
   }, [answerData, metricData]);
 
-  const handleQuerySelect = useCallback((query: Query) => {
-    setActiveQueryId(query.id);
-    setSelectedOutput(query.response_text || "No response available.");
-    setAnswerData(null); setThesisData(null); setChartData(null);
-  }, []);
-
-  const handleClearQueries = useCallback(() => {
-    setQueries([]);
-    useSessionStore.getState().clearSession();
-  }, []);
+  const handleTextSubmit = useCallback((text: string) => {
+    if (!text.trim()) return;
+    submitQuery(text);
+  }, [submitQuery]);
 
   const handleTradeConfirm = useCallback(async () => {
     if (!pendingOrder || !user) return;
@@ -260,7 +259,7 @@ const AppResearch = () => {
     try {
       let fill: { fill_price: number; total_value: number };
       if (USE_BACKEND) { fill = await executeTradeApi({ ticker: pendingOrder.ticker, side: pendingOrder.side, quantity: pendingOrder.quantity, order_type: "market" }); }
-      else { await new Promise((r) => setTimeout(r, 1500)); const fp = pendingOrder.estimated_price * (1 + (Math.random() - 0.5) * 0.001); fill = { fill_price: fp, total_value: fp * pendingOrder.quantity }; }
+      else { await new Promise(r => setTimeout(r, 1500)); const fp = pendingOrder.estimated_price * (1 + (Math.random() - 0.5) * 0.001); fill = { fill_price: fp, total_value: fp * pendingOrder.quantity }; }
       const newBP = pendingOrder.side === "buy" ? buyingPower - fill.total_value : buyingPower + fill.total_value;
       setBuyingPower(newBP);
       await supabase.from("trades").insert({ user_id: user.id, ticker: pendingOrder.ticker, side: pendingOrder.side, quantity: pendingOrder.quantity, fill_price: fill.fill_price, total_value: fill.total_value, status: "filled" });
@@ -272,94 +271,67 @@ const AppResearch = () => {
   const handleTradeCancel = useCallback(() => { setPendingOrder(null); setTradeLoading(false); setFillResult(null); }, []);
 
   return (
-    <div className="flex" style={{ background: "hsl(var(--background))", minHeight: "calc(100vh - 144px)" }}>
-      {/* Volumetric background glows */}
-      <div className="fixed inset-0 z-0 pointer-events-none">
-        <div style={{
-          position: "absolute", top: "15%", left: "5%", width: "45%", height: "50%",
-          background: "radial-gradient(ellipse, rgba(0, 212, 255, 0.04) 0%, transparent 70%)",
-        }} />
-        <div style={{
-          position: "absolute", bottom: "10%", right: "5%", width: "40%", height: "45%",
-          background: "radial-gradient(ellipse, rgba(240, 165, 0, 0.03) 0%, transparent 70%)",
-        }} />
-      </div>
-
-      {/* Sidebar */}
-      <div className="shrink-0 relative z-10" style={{ width: 200 }}>
-        <ResearchSidebar
-          queries={queries}
-          activeQueryId={activeQueryId}
-          onSelect={handleQuerySelect}
-          onClear={handleClearQueries}
-        />
-      </div>
-
-      {/* Main content */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative z-10">
-        {/* Content grid */}
-        <div className="flex-1 overflow-y-auto p-4">
-          <div
-            className="grid gap-4 h-full"
-            style={{
-              gridTemplateColumns: "1fr 340px",
-              gridTemplateRows: "1fr auto auto",
-              minHeight: "calc(100vh - 340px)",
-            }}
-          >
-            {/* Main analysis output */}
-            <div style={{ gridRow: "1 / 3" }}>
-              <AnalysisOutputCard
-                answerData={answerData}
-                stockQuote={stockQuote}
-                metricData={metricData}
-                thesisData={thesisData}
-                thesisLoading={thesisLoading}
-                selectedOutput={selectedOutput}
-                onChipClick={handleTextSubmit}
-                onGenerateThesis={handleGenerateThesis}
-                onPlotTrend={handlePlotTrend}
-              />
-            </div>
-
-            {/* Right column — chart */}
-            <div>
-              <VisualizationCard
-                chartData={chartData}
-                chartTitle={metricData?.metric || "Price"}
-                chartTicker={answerData?.ticker || sessionTicker || ""}
-                onPlotTrend={answerData?.ticker ? handlePlotTrend : undefined}
-              />
-            </div>
-
-            {/* Right column — portfolio widget */}
-            <div>
-              <PortfolioWidget />
-            </div>
-
-            {/* Bottom left — market data + metrics */}
-            <div className="flex gap-4">
-              <div className="w-1/2">
-                <MarketDataWidget />
+    <div className="flex" style={{ height: "calc(100vh - 144px)" }}>
+      {/* Left column — conversation */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Chat thread */}
+        <div className="flex-1 overflow-y-auto px-6 py-4">
+          {messages.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full gap-6">
+              <div className="text-center">
+                <h2 className="font-display" style={{ color: "hsl(var(--foreground))", fontSize: 22, fontWeight: 600, marginBottom: 6 }}>
+                  Ask anything about the markets
+                </h2>
+                <p style={{ color: "hsl(var(--muted-foreground))", fontSize: 13 }}>
+                  Query SEC filings, get price data, generate trade theses
+                </p>
               </div>
-              <div className="w-1/2">
-                <div className="glass-panel glass-edge-purple overflow-hidden h-full">
-                  <JarvisMetricsRow
-                    queryCount={queries.length}
-                    activeTicker={sessionTicker}
-                    confidence={answerData?.confidence || null}
-                    latencyMs={latencyMs}
-                  />
-                </div>
+              <div className="flex flex-col gap-2 w-full" style={{ maxWidth: 420 }}>
+                {EXAMPLE_QUERIES.map(q => (
+                  <button
+                    key={q}
+                    onClick={() => handleTextSubmit(q)}
+                    className="text-left px-4 py-3 rounded-xl transition-all duration-200"
+                    style={{
+                      border: "1px solid rgba(255,255,255,0.06)",
+                      background: "hsl(var(--muted))",
+                      color: "hsl(var(--muted-foreground))",
+                      fontSize: 13,
+                      cursor: "pointer",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = "rgba(55,138,221,0.4)";
+                      e.currentTarget.style.color = "hsl(var(--foreground))";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)";
+                      e.currentTarget.style.color = "hsl(var(--muted-foreground))";
+                    }}
+                  >
+                    {q}
+                  </button>
+                ))}
               </div>
             </div>
-
-            <div />
-          </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {messages.map(msg => (
+                <ChatMessage key={msg.id} msg={msg} />
+              ))}
+              <div ref={chatEndRef} />
+            </div>
+          )}
         </div>
 
-        {/* Prompt bar */}
-        <div className="shrink-0 p-4 pt-0">
+        {/* Voice overlay */}
+        {voiceState !== "idle" && (
+          <div className="px-6 pb-2">
+            <VoiceOverlay voiceState={voiceState} onCancel={handleVoiceCancel} />
+          </div>
+        )}
+
+        {/* Input dock — pinned */}
+        <div className="shrink-0 px-6 pb-4 pt-2">
           <ResearchPromptBar
             onSubmit={handleTextSubmit}
             onMicClick={handleMicClick}
@@ -367,7 +339,22 @@ const AppResearch = () => {
             disabled={false}
           />
         </div>
+      </div>
 
+      {/* Right column — 340px visualizations */}
+      <div className="shrink-0" style={{ width: 340 }}>
+        <ResearchVisualizationsPanel
+          answerData={answerData}
+          stockQuote={stockQuote}
+          metricData={metricData}
+          thesisData={thesisData}
+          thesisLoading={thesisLoading}
+          chartData={chartData}
+          chartTitle={metricData?.metric || "Price"}
+          chartTicker={answerData?.ticker || sessionTicker || ""}
+          onGenerateThesis={() => handleGenerateThesis()}
+          onPlotTrend={() => handlePlotTrend()}
+        />
       </div>
 
       <TradeModal order={pendingOrder} onConfirm={handleTradeConfirm} onCancel={handleTradeCancel} isLoading={tradeLoading} fillResult={fillResult} />

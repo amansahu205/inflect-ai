@@ -60,7 +60,10 @@ const Login = () => {
 
   return (
     <div className="min-h-screen relative overflow-hidden" style={{ background: "hsl(var(--background))" }}>
-      <MatrixCanvas />
+      <video autoPlay muted loop playsInline className="fixed inset-0 w-full h-full object-cover z-0">
+        <source src="/videos/login_bg.mp4" type="video/mp4" />
+      </video>
+      <div className="fixed inset-0 z-0 bg-background/50" />
 
       {/* Volumetric glows */}
       <div className="fixed inset-0 z-[1] pointer-events-none">

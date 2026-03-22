@@ -27,7 +27,7 @@ const StatCards = ({ portfolioValue, todayPnl, buyingPower, isLoading }: StatCar
       color: todayPnl >= 0 ? "hsl(var(--bull))" : "hsl(var(--bear))",
     },
     { label: "BUYING POWER", value: formatCurrency(buyingPower), color: "hsl(var(--cyan))" },
-    { label: "AI SENTIMENT", value: "88% BULLISH", color: "hsl(var(--bull))" },
+    { label: "POSITIONS", value: String(positions), color: "hsl(var(--cyan))" },
   ];
 
   return (

@@ -27,18 +27,7 @@ const EquityCurve = () => {
         .eq("user_id", user.id)
         .order("snapshot_date", { ascending: true });
 
-      if (!snaps || snaps.length === 0) {
-        // Seed initial snapshot
-        const today = new Date().toISOString().split("T")[0];
-        await supabase.from("portfolio_snapshots").insert({
-          user_id: user.id,
-          total_value: 100000,
-          snapshot_date: today,
-        });
-        setData([{ snapshot_date: today, total_value: 100000 }]);
-      } else {
-        setData(snaps as Snapshot[]);
-      }
+      if (snaps) setData(snaps as Snapshot[]);
       setLoading(false);
     })();
   }, [user]);
@@ -85,6 +74,10 @@ const EquityCurve = () => {
         {loading ? (
           <div className="flex items-center justify-center h-full">
             <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: "hsl(var(--cyan))", borderTopColor: "transparent" }} />
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="flex items-center justify-center h-full">
+            <p style={{ color: "hsl(var(--muted-foreground))", fontSize: 12 }}>No data yet. Your equity curve will build as you trade.</p>
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">

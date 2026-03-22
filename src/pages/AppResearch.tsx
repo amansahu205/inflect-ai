@@ -161,6 +161,7 @@ const AppResearch = () => {
   const handleVoiceCancel = useCallback(() => {
     if (isRecording) stopRecording();
     setVoiceState("idle");
+    setVoiceProcessingPhase("transcribe");
   }, [isRecording, stopRecording]);
 
   const runPipeline = useCallback(async (text: string) => {

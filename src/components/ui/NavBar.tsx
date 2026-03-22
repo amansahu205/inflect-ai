@@ -36,10 +36,10 @@ const NavBar = () => {
       className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between"
       style={{
         height: 56,
-        background: "rgba(8,12,20,0.95)",
-        backdropFilter: "blur(12px)",
-        WebkitBackdropFilter: "blur(12px)",
-        borderBottom: "1px solid #1E2D40",
+        background: "rgba(6, 10, 18, 0.92)",
+        backdropFilter: "blur(16px)",
+        WebkitBackdropFilter: "blur(16px)",
+        borderBottom: "1px solid rgba(255,255,255,0.06)",
         padding: "0 32px",
       }}
     >
@@ -58,19 +58,20 @@ const NavBar = () => {
             <Link
               key={link.to}
               to={link.to}
-              className="transition-colors duration-200"
+              className="transition-colors duration-200 font-mono"
               style={{
-                color: isActive ? "#F0A500" : "#8892A4",
-                fontSize: 14,
+                color: isActive ? "hsl(var(--accent))" : "hsl(var(--muted-foreground))",
+                fontSize: 13,
                 fontWeight: isActive ? 600 : 400,
                 paddingBottom: 4,
-                borderBottom: isActive ? "2px solid #F0A500" : "2px solid transparent",
+                borderBottom: isActive ? "2px solid hsl(var(--accent))" : "2px solid transparent",
+                letterSpacing: "0.02em",
               }}
               onMouseEnter={(e) => {
-                if (!isActive) e.currentTarget.style.color = "#FFFFFF";
+                if (!isActive) e.currentTarget.style.color = "hsl(var(--foreground))";
               }}
               onMouseLeave={(e) => {
-                if (!isActive) e.currentTarget.style.color = "#8892A4";
+                if (!isActive) e.currentTarget.style.color = "hsl(var(--muted-foreground))";
               }}
             >
               {link.label}
@@ -86,9 +87,9 @@ const NavBar = () => {
               width: 32,
               height: 32,
               borderRadius: "50%",
-              background: "rgba(240,165,0,0.2)",
-              border: "1px solid #F0A500",
-              color: "#F0A500",
+              background: "rgba(0, 212, 255, 0.12)",
+              border: "1px solid rgba(0, 212, 255, 0.3)",
+              color: "hsl(var(--accent))",
               fontSize: 13,
               fontWeight: 700,
               cursor: "pointer",
@@ -99,26 +100,20 @@ const NavBar = () => {
 
           {open && (
             <div
-              className="absolute right-0 top-full mt-2"
-              style={{
-                background: "#0F1820",
-                border: "1px solid #1E2D40",
-                borderRadius: 8,
-                padding: 4,
-                minWidth: 140,
-              }}
+              className="absolute right-0 top-full mt-2 glass-panel"
+              style={{ padding: 4, minWidth: 140 }}
             >
               <button
                 onClick={handleLogout}
                 className="w-full text-left transition-colors duration-150"
-                style={{ padding: "8px 16px", color: "#8892A4", fontSize: 14, borderRadius: 6 }}
+                style={{ padding: "8px 16px", color: "hsl(var(--muted-foreground))", fontSize: 14, borderRadius: 6 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "#1E2D40";
-                  e.currentTarget.style.color = "#FFFFFF";
+                  e.currentTarget.style.background = "rgba(0,212,255,0.06)";
+                  e.currentTarget.style.color = "hsl(var(--foreground))";
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.background = "transparent";
-                  e.currentTarget.style.color = "#8892A4";
+                  e.currentTarget.style.color = "hsl(var(--muted-foreground))";
                 }}
               >
                 Log out

@@ -272,7 +272,7 @@ const AppResearch = () => {
   const handleTradeCancel = useCallback(() => { setPendingOrder(null); setTradeLoading(false); setFillResult(null); }, []);
 
   return (
-    <div className="flex h-screen" style={{ background: "hsl(var(--background))" }}>
+    <div className="flex" style={{ background: "hsl(var(--background))", minHeight: "calc(100vh - 144px)" }}>
       {/* Volumetric background glows */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <div style={{

@@ -26,7 +26,7 @@ const HudCorner = ({ position }: { position: "tl" | "tr" | "bl" | "br" }) => {
 
 const JarvisChatPanel = ({ messages, isLoading, onSubmit }: JarvisChatPanelProps) => {
   return (
-    <div className="relative flex flex-col" style={{ background: "rgba(8,12,20,0.9)", minHeight: 320 }}>
+    <div className="relative flex flex-col h-full" style={{ background: "rgba(8,12,20,0.9)", minHeight: 0 }}>
       <HudCorner position="tl" />
       <HudCorner position="tr" />
       <HudCorner position="bl" />

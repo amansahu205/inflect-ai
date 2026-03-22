@@ -295,11 +295,12 @@ const AppResearch = () => {
         className="relative z-[1]"
         style={{
           display: "grid",
-          gridTemplateColumns: "280px 1fr 1fr 320px",
+          gridTemplateColumns: "260px 1fr 1fr 300px",
           gridTemplateRows: "1fr auto auto",
           gap: 1,
           background: "rgba(240,165,0,0.08)",
           height: "calc(100vh - 96px - 48px)",
+          overflow: "hidden",
         }}
       >
         {/* Tile 1 — Query Log (full left) */}
@@ -308,7 +309,7 @@ const AppResearch = () => {
         </div>
 
         {/* Tile 2/3 — HUD Voice or Chat (center top) */}
-        <div style={{ gridColumn: "2 / 4", position: "relative" }}>
+        <div style={{ gridColumn: "2 / 4", position: "relative", overflow: "hidden", minHeight: 0 }}>
           {/* Mode toggle in top right */}
           <div style={{ position: "absolute", top: 12, right: 16, zIndex: 10 }}>
             <ModeToggle activeMode={mode} onChange={handleModeChange} />
@@ -349,10 +350,12 @@ const AppResearch = () => {
           />
         </div>
 
-        {/* Tile 6 — Input Bar */}
-        <div style={{ gridColumn: "2 / 4" }}>
-          <JarvisInputBar onSubmit={handleTextSubmit} disabled={false} />
-        </div>
+        {/* Tile 6 — Input Bar (hidden in chat mode since chat has its own input) */}
+        {mode !== "chat" && (
+          <div style={{ gridColumn: "2 / 4" }}>
+            <JarvisInputBar onSubmit={handleTextSubmit} disabled={false} />
+          </div>
+        )}
       </div>
 
       <TradeModal order={pendingOrder} onConfirm={handleTradeConfirm} onCancel={handleTradeCancel} isLoading={tradeLoading} fillResult={fillResult} />

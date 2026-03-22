@@ -3,23 +3,18 @@ import { useAuthStore } from "@/store/authStore";
 import { usePortfolioStore } from "@/store/portfolioStore";
 import { supabase } from "@/integrations/supabase/client";
 import { useStockQuotes } from "@/hooks/useStockQuotes";
-import { useTicker } from "@/hooks/useTicker";
-import StatCards from "@/components/portfolio/StatCards";
-import EquityCurve from "@/components/portfolio/EquityCurve";
+import { formatCurrency, formatPercent } from "@/utils/formatters";
 import ActivePositions from "@/components/portfolio/ActivePositions";
-import AIInsights from "@/components/portfolio/AIInsights";
-import QuickTrade from "@/components/portfolio/QuickTrade";
-import Watchlist from "@/components/portfolio/Watchlist";
+import TradeHistory from "@/components/trading/TradeHistory";
 import type { Position, Trade } from "@/types/api";
 
 const AppPortfolio = () => {
   const { user } = useAuthStore();
   const { positions, trades, buyingPower, setPositions, setTrades, setBuyingPower } = usePortfolioStore();
   const [isLoading, setIsLoading] = useState(true);
-  const { marketStatus } = useTicker();
 
   const positionTickers = useMemo(() => positions.map((p) => p.ticker), [positions]);
-  const { quotes, refetch: refetchQuotes } = useStockQuotes(positionTickers, 30_000);
+  const { quotes } = useStockQuotes(positionTickers, 30_000);
 
   const fetchData = useCallback(async () => {
     if (!user) return;
@@ -37,55 +32,70 @@ const AppPortfolio = () => {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  const handleTradeComplete = useCallback(() => {
-    fetchData();
-    refetchQuotes();
-  }, [fetchData, refetchQuotes]);
-
-  // Calculate portfolio stats
+  // Portfolio stats
   const positionsValue = positions.reduce((sum, p) => {
     const q = quotes[p.ticker];
-    const price = q?.price ?? p.avg_cost_basis;
-    return sum + price * p.quantity;
+    return sum + (q?.price ?? p.avg_cost_basis) * p.quantity;
   }, 0);
-  const portfolioValue = positionsValue + buyingPower;
-  const todayPnl = positions.reduce((sum, p) => {
+  const totalValue = positionsValue + buyingPower;
+  const totalPnl = positions.reduce((sum, p) => {
     const q = quotes[p.ticker];
     if (!q) return sum;
     return sum + (q.price - p.avg_cost_basis) * p.quantity;
   }, 0);
 
-  // Ticker click from watchlist → could pre-fill trade panel
-  const [, setSelectedTicker] = useState("");
-  const handleWatchlistClick = useCallback((ticker: string) => {
-    setSelectedTicker(ticker);
-    // Could scroll to trade panel or pre-fill — for now just a placeholder
-  }, []);
+  const summaryCards = [
+    { label: "TOTAL VALUE", value: formatCurrency(totalValue), color: "hsl(var(--foreground))" },
+    { label: "BUYING POWER", value: formatCurrency(buyingPower), color: "hsl(var(--cyan))" },
+    {
+      label: "UNREALIZED P&L",
+      value: `${totalPnl >= 0 ? "+" : ""}${formatCurrency(totalPnl)}`,
+      color: totalPnl >= 0 ? "hsl(var(--bull))" : "hsl(var(--bear))",
+    },
+    { label: "POSITIONS", value: String(positions.length), color: "hsl(var(--gold))" },
+  ];
 
   return (
     <div className="relative z-[2]" style={{ padding: "20px" }}>
-      {/* Layout: 65% left + 35% right */}
-      <div className="grid gap-4" style={{ gridTemplateColumns: "65% 35%" }}>
-        {/* LEFT COLUMN */}
-        <div className="space-y-4">
-          <StatCards
-            portfolioValue={portfolioValue}
-            todayPnl={todayPnl}
-            buyingPower={buyingPower}
-            positionCount={positions.length}
-            isLoading={isLoading}
-          />
-          <EquityCurve />
-          <ActivePositions positions={positions} quotes={quotes} isLoading={isLoading} />
-          <AIInsights />
-        </div>
-
-        {/* RIGHT COLUMN */}
-        <div className="space-y-4">
-          <QuickTrade onTradeComplete={handleTradeComplete} quotes={quotes} />
-          <Watchlist onTickerClick={handleWatchlistClick} />
-        </div>
+      {/* Summary row */}
+      <div className="grid grid-cols-4 gap-3 mb-6">
+        {summaryCards.map((c) => (
+          <div
+            key={c.label}
+            className="rounded-2xl"
+            style={{
+              background: "#0F1820",
+              border: "1px solid hsl(var(--border))",
+              borderTop: "2px solid hsl(var(--gold))",
+              padding: 16,
+            }}
+          >
+            <p className="uppercase" style={{ color: "hsl(var(--muted-foreground))", fontSize: 11, letterSpacing: "0.5px", marginBottom: 8 }}>
+              {c.label}
+            </p>
+            {isLoading ? (
+              <div className="h-7 rounded" style={{
+                background: "linear-gradient(90deg, hsl(var(--border)) 25%, hsl(var(--muted)) 50%, hsl(var(--border)) 75%)",
+                backgroundSize: "200% 100%", animation: "shimmer 1.5s infinite",
+              }} />
+            ) : (
+              <p className="font-mono font-bold" style={{ color: c.color, fontSize: 22 }}>{c.value}</p>
+            )}
+          </div>
+        ))}
       </div>
+
+      {/* Positions */}
+      <h3 className="uppercase mb-3" style={{ color: "hsl(var(--muted-foreground))", fontSize: 11, letterSpacing: "0.1em" }}>
+        Active Positions
+      </h3>
+      <ActivePositions positions={positions} quotes={quotes} isLoading={isLoading} />
+
+      {/* Trade History */}
+      <h3 className="uppercase mt-8 mb-3" style={{ color: "hsl(var(--muted-foreground))", fontSize: 11, letterSpacing: "0.1em" }}>
+        Trade History
+      </h3>
+      <TradeHistory trades={trades} isLoading={isLoading} />
     </div>
   );
 };

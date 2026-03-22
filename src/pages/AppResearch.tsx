@@ -15,6 +15,7 @@ import ResearchPromptBar from "@/components/research/ResearchPromptBar";
 import ResearchVisualizationsPanel from "@/components/research/ResearchVisualizationsPanel";
 import ChatMessage, { type ChatMsg } from "@/components/research/ChatMessage";
 import VoiceOverlay from "@/components/research/VoiceOverlay";
+import type { ProcessingPhase } from "@/components/research/VoiceOverlay";
 import { EXAMPLE_QUERIES } from "@/utils/constants";
 import type { AnswerResult, ThesisResult, TradeOrder, StockQuote, Query } from "@/types/api";
 import type { AnalyzeResult } from "@/api/query";

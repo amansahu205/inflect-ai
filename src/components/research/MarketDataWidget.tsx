@@ -24,34 +24,30 @@ const MarketDataWidget = () => {
   const display = quotes.slice(0, 4);
 
   return (
-    <div className="glass rounded-xl p-4" style={{ border: "1px solid hsl(var(--border))" }}>
+    <div className="glass-panel glass-edge-purple p-4">
       <h3 className="font-mono mb-3" style={{ color: "hsl(var(--muted-foreground))", fontSize: 10, letterSpacing: "0.15em" }}>
         MARKET DATA
       </h3>
       <div className="flex flex-col gap-2.5">
         {display.map((q) => {
           const isUp = q.direction === "up";
-          const color = isUp ? "#00D68F" : "#E05555";
+          const color = isUp ? "#00FF88" : "#E05555";
           const domain = TICKER_TO_DOMAIN[q.ticker];
 
           return (
             <div key={q.ticker} className="flex items-center gap-3">
-              {/* Company logo */}
-              <div
-                className="shrink-0 rounded-full p-[1.5px] transition-all duration-300"
-                style={{ boxShadow: "0 0 8px hsl(var(--primary) / 0.25)" }}
-              >
+              <div className="shrink-0">
                 {domain ? (
                   <img
                     src={`https://img.logo.dev/${domain}?token=${LOGO_TOKEN}&size=28`}
                     alt={q.ticker}
                     loading="lazy"
-                    className="w-7 h-7 rounded-full ring-1 ring-primary/20"
+                    className="w-7 h-7 rounded-full ring-1 ring-white/10"
                   />
                 ) : (
                   <div
                     className="flex items-center justify-center w-7 h-7 rounded-full"
-                    style={{ background: "hsl(var(--muted))", color: "hsl(var(--primary))", fontSize: 9, fontWeight: 700 }}
+                    style={{ background: "hsl(var(--muted))", color: "hsl(var(--accent))", fontSize: 9, fontWeight: 700 }}
                   >
                     {q.ticker.slice(0, 2)}
                   </div>

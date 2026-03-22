@@ -10,8 +10,8 @@ interface VisualizationCardProps {
 
 const VisualizationCard = ({ chartData, chartTitle, chartTicker, onPlotTrend }: VisualizationCardProps) => {
   return (
-    <div className="glass rounded-xl overflow-hidden" style={{ border: "1px solid hsl(var(--border))" }}>
-      <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: "1px solid hsl(var(--border))" }}>
+    <div className="glass-panel glass-edge-gold overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
         <h3 className="font-mono" style={{ color: "hsl(var(--muted-foreground))", fontSize: 10, letterSpacing: "0.15em" }}>
           RELATED DATA VISUALIZATIONS
         </h3>
@@ -19,9 +19,9 @@ const VisualizationCard = ({ chartData, chartTitle, chartTicker, onPlotTrend }: 
           <button
             onClick={onPlotTrend}
             className="font-mono transition-colors"
-            style={{ color: "hsl(var(--primary))", fontSize: 10, background: "none", border: "none", cursor: "pointer" }}
+            style={{ color: "hsl(var(--accent))", fontSize: 10, background: "none", border: "none", cursor: "pointer" }}
           >
-            Load Chart →
+            History ▾
           </button>
         )}
       </div>
@@ -36,7 +36,7 @@ const VisualizationCard = ({ chartData, chartTitle, chartTicker, onPlotTrend }: 
           />
         ) : (
           <div className="flex items-center justify-center h-full" style={{ minHeight: 160 }}>
-            <p className="font-mono" style={{ color: "hsl(var(--border))", fontSize: 11 }}>
+            <p className="font-mono" style={{ color: "hsl(var(--muted-foreground) / 0.4)", fontSize: 11 }}>
               Submit a query to see visualizations
             </p>
           </div>

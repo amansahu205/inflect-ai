@@ -1,14 +1,14 @@
-/* ── Ticker Bar ── */
+/* ── Ticker Bar — Bloomberg-style Dense ── */
 .ticker-wrapper {
   position: fixed;
   top: 56px;
   left: 0;
   right: 0;
-  height: 40px;
+  height: 36px;
   z-index: 40;
   overflow: hidden;
-  background: linear-gradient(90deg, #080C14 0%, #0A1020 50%, #080C14 100%);
-  border-bottom: 1px solid rgba(240, 165, 0, 0.15);
+  background: rgba(6, 10, 18, 0.95);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 /* Shimmer line */
@@ -21,9 +21,9 @@
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(240, 165, 0, 0.4) 20%,
-    rgba(240, 165, 0, 0.8) 50%,
-    rgba(240, 165, 0, 0.4) 80%,
+    rgba(0, 212, 255, 0.3) 20%,
+    rgba(240, 165, 0, 0.5) 50%,
+    rgba(0, 212, 255, 0.3) 80%,
     transparent 100%
   );
   pointer-events: none;
@@ -49,20 +49,20 @@
 .ticker-item {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 0 20px;
-  height: 40px;
+  gap: 6px;
+  padding: 0 16px;
+  height: 36px;
   cursor: pointer;
   transition: background 0.2s ease;
   position: relative;
 }
 
 .ticker-item:hover {
-  background: linear-gradient(90deg, transparent, rgba(240, 165, 0, 0.06), transparent);
+  background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.04), transparent);
 }
 
 .ticker-item:hover .ticker-symbol {
-  color: #F0A500;
+  color: hsl(195, 100%, 50%);
 }
 
 .ticker-item:hover .ticker-price {
@@ -72,18 +72,18 @@
 /* Separator */
 .ticker-sep {
   width: 1px;
-  height: 16px;
+  height: 14px;
   align-self: center;
-  background: linear-gradient(to bottom, transparent, rgba(240, 165, 0, 0.2), transparent);
+  background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.06), transparent);
   flex-shrink: 0;
 }
 
 /* Symbol */
 .ticker-symbol {
-  color: #5A6478;
+  color: rgba(255, 255, 255, 0.35);
   font-family: "JetBrains Mono", monospace;
-  font-size: 10px;
-  font-weight: 600;
+  font-size: 9px;
+  font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   transition: color 0.2s;
@@ -91,9 +91,9 @@
 
 /* Price */
 .ticker-price {
-  color: #C8D0DC;
+  color: rgba(255, 255, 255, 0.7);
   font-family: "JetBrains Mono", monospace;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.02em;
   transition: color 0.2s;
@@ -113,24 +113,24 @@
 /* Change pill */
 .ticker-pill {
   font-family: "JetBrains Mono", monospace;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
-  padding: 2px 6px;
-  border-radius: 4px;
+  padding: 1px 5px;
+  border-radius: 3px;
   letter-spacing: 0.03em;
   white-space: nowrap;
 }
 
 .ticker-pill[data-direction="up"] {
-  color: #00D68F;
-  background: rgba(0, 214, 143, 0.12);
-  border: 1px solid rgba(0, 214, 143, 0.2);
+  color: #00FF88;
+  background: rgba(0, 255, 136, 0.08);
+  border: 1px solid rgba(0, 255, 136, 0.15);
 }
 
 .ticker-pill[data-direction="down"] {
   color: #E05555;
-  background: rgba(224, 85, 85, 0.12);
-  border: 1px solid rgba(224, 85, 85, 0.2);
+  background: rgba(224, 85, 85, 0.08);
+  border: 1px solid rgba(224, 85, 85, 0.15);
 }
 
 /* Fade edges */
@@ -138,9 +138,9 @@
   position: absolute;
   left: 0;
   top: 0;
-  width: 80px;
+  width: 60px;
   height: 100%;
-  background: linear-gradient(to right, #080C14 0%, rgba(8, 12, 20, 0.8) 60%, transparent 100%);
+  background: linear-gradient(to right, rgba(6, 10, 18, 0.95) 0%, transparent 100%);
   z-index: 3;
   pointer-events: none;
 }
@@ -149,9 +149,9 @@
   position: absolute;
   right: 80px;
   top: 0;
-  width: 80px;
+  width: 60px;
   height: 100%;
-  background: linear-gradient(to left, #080C14 0%, rgba(8, 12, 20, 0.8) 60%, transparent 100%);
+  background: linear-gradient(to left, rgba(6, 10, 18, 0.95) 0%, transparent 100%);
   z-index: 3;
   pointer-events: none;
 }
@@ -161,20 +161,20 @@
   position: absolute;
   right: 0;
   top: 0;
-  height: 40px;
-  padding: 0 16px;
+  height: 36px;
+  padding: 0 14px;
   display: flex;
   align-items: center;
-  gap: 6px;
-  background: linear-gradient(to left, #080C14 60%, transparent 100%);
-  width: 100px;
+  gap: 5px;
+  background: linear-gradient(to left, rgba(6, 10, 18, 0.98) 60%, transparent 100%);
+  width: 90px;
   justify-content: flex-end;
   z-index: 4;
 }
 
 .ticker-dot {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
   flex-shrink: 0;
 }
@@ -188,8 +188,8 @@
 }
 
 @keyframes livePulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(0, 214, 143, 0.6); }
-  50% { box-shadow: 0 0 0 4px rgba(0, 214, 143, 0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.6); }
+  50% { box-shadow: 0 0 0 4px rgba(0, 255, 136, 0); }
 }
 
 @keyframes amberPulse {
@@ -199,7 +199,7 @@
 
 .ticker-status-text {
   font-family: "JetBrains Mono", monospace;
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 700;
   letter-spacing: 0.2em;
 }

@@ -27,9 +27,9 @@ interface AnalysisOutputCardProps {
 }
 
 const confStyles: Record<string, { color: string; bg: string }> = {
-  HIGH: { color: "#00D68F", bg: "rgba(0,214,143,0.1)" },
-  MEDIUM: { color: "#F0A500", bg: "rgba(240,165,0,0.1)" },
-  LOW: { color: "#E05555", bg: "rgba(224,85,85,0.1)" },
+  HIGH: { color: "hsl(150, 100%, 50%)", bg: "rgba(0,255,136,0.08)" },
+  MEDIUM: { color: "hsl(38, 100%, 47%)", bg: "rgba(240,165,0,0.08)" },
+  LOW: { color: "hsl(0, 68%, 61%)", bg: "rgba(224,85,85,0.08)" },
 };
 
 const AnalysisOutputCard = ({
@@ -40,7 +40,10 @@ const AnalysisOutputCard = ({
 
   if (!hasData) {
     return (
-      <div className="glass rounded-xl flex flex-col items-center justify-center" style={{ border: "1px solid hsl(var(--border))", minHeight: 400, padding: 40 }}>
+      <div
+        className="glass-panel glass-edge-cyan flex flex-col items-center justify-center"
+        style={{ minHeight: 400, padding: 40 }}
+      >
         <h2 className="font-display" style={{ color: "hsl(var(--foreground))", fontSize: 22, fontWeight: 600, marginBottom: 8 }}>
           Ask anything about the markets
         </h2>
@@ -54,22 +57,24 @@ const AnalysisOutputCard = ({
               onClick={() => onChipClick(q)}
               className="text-left px-4 py-3 rounded-lg transition-all duration-200"
               style={{
-                border: "1px solid hsl(var(--border))",
-                background: "hsl(var(--card))",
+                border: "1px solid rgba(255,255,255,0.06)",
+                background: "rgba(12, 18, 28, 0.6)",
                 color: "hsl(var(--muted-foreground))",
                 fontSize: 13,
                 cursor: "pointer",
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = "hsl(var(--primary))";
-                e.currentTarget.style.color = "hsl(var(--primary))";
+                e.currentTarget.style.borderColor = "rgba(0, 212, 255, 0.3)";
+                e.currentTarget.style.color = "hsl(var(--accent))";
+                e.currentTarget.style.boxShadow = "0 0 12px rgba(0, 212, 255, 0.08)";
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = "hsl(var(--border))";
+                e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)";
                 e.currentTarget.style.color = "hsl(var(--muted-foreground))";
+                e.currentTarget.style.boxShadow = "none";
               }}
             >
-              <span style={{ color: "hsl(var(--primary))", marginRight: 8 }}>›</span>
+              <span style={{ color: "hsl(var(--accent))", marginRight: 8 }}>›</span>
               {q}
             </button>
           ))}
@@ -79,24 +84,22 @@ const AnalysisOutputCard = ({
   }
 
   return (
-    <div className="glass rounded-xl overflow-hidden" style={{ border: "1px solid hsl(var(--border))" }}>
+    <div className="glass-panel glass-edge-cyan overflow-hidden">
       {/* Header */}
-      <div className="px-5 py-4" style={{ borderBottom: "1px solid hsl(var(--border))" }}>
-        <h2 className="font-display" style={{ color: "hsl(var(--foreground))", fontSize: 10, letterSpacing: "0.15em" }}>
+      <div className="px-5 py-4" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+        <h2 className="font-mono" style={{ color: "hsl(var(--muted-foreground))", fontSize: 10, letterSpacing: "0.15em" }}>
           ANALYSIS OUTPUT
         </h2>
       </div>
 
       {/* Content */}
       <div className="p-5 overflow-y-auto" style={{ maxHeight: "calc(100vh - 340px)" }}>
-        {/* Stock card if price check */}
         {stockQuote && (
           <div className="mb-4">
             <StockCard quote={stockQuote} />
           </div>
         )}
 
-        {/* Metric card */}
         {metricData && (
           <div className="mb-4">
             <MetricCard
@@ -111,16 +114,13 @@ const AnalysisOutputCard = ({
           </div>
         )}
 
-        {/* Main answer */}
         {answerData && (
           <div className="mb-4">
-            {/* Title */}
             <h3 className="font-display mb-4" style={{ color: "hsl(var(--foreground))", fontSize: 20, fontWeight: 600, lineHeight: 1.3 }}>
               {answerData.ticker ? `${answerData.ticker} ` : ""}
               {answerData.intent_type === "price_check" ? "Price Check" : "Analysis"}
             </h3>
 
-            {/* Answer section */}
             <div className="mb-4">
               <h4 className="font-display mb-2" style={{ color: "hsl(var(--foreground))", fontSize: 14, fontWeight: 600 }}>
                 Answer
@@ -130,7 +130,6 @@ const AnalysisOutputCard = ({
               </p>
             </div>
 
-            {/* Citation */}
             {answerData.citation && (
               <div className="mb-4">
                 <CitationCard citation={answerData.citation} source={answerData.source} />
@@ -144,6 +143,7 @@ const AnalysisOutputCard = ({
                 style={{
                   background: confStyles[answerData.confidence]?.bg || "hsl(var(--muted))",
                   border: `1px solid ${confStyles[answerData.confidence]?.color || "hsl(var(--border))"}40`,
+                  boxShadow: `0 0 12px ${confStyles[answerData.confidence]?.color || "transparent"}15`,
                 }}
               >
                 <span className="font-mono" style={{ color: "hsl(var(--muted-foreground))", fontSize: 10 }}>
@@ -162,9 +162,9 @@ const AnalysisOutputCard = ({
                   onClick={onGenerateThesis}
                   className="px-4 py-2 rounded-lg font-mono transition-all duration-200"
                   style={{
-                    border: "1px solid hsl(var(--primary) / 0.4)",
-                    background: "hsl(var(--primary) / 0.08)",
-                    color: "hsl(var(--primary))",
+                    border: "1px solid rgba(0, 212, 255, 0.3)",
+                    background: "rgba(0, 212, 255, 0.06)",
+                    color: "hsl(var(--accent))",
                     fontSize: 12,
                     cursor: "pointer",
                   }}
@@ -175,7 +175,7 @@ const AnalysisOutputCard = ({
                   onClick={onPlotTrend}
                   className="px-4 py-2 rounded-lg font-mono transition-all duration-200"
                   style={{
-                    border: "1px solid hsl(var(--border))",
+                    border: "1px solid rgba(255,255,255,0.08)",
                     background: "transparent",
                     color: "hsl(var(--muted-foreground))",
                     fontSize: 12,
@@ -189,21 +189,18 @@ const AnalysisOutputCard = ({
           </div>
         )}
 
-        {/* Selected output from history */}
         {selectedOutput && !answerData && (
           <p style={{ color: "hsl(var(--foreground))", fontSize: 14, lineHeight: 1.7, whiteSpace: "pre-wrap" }}>
             {selectedOutput}
           </p>
         )}
 
-        {/* Thesis */}
         {(thesisLoading || thesisData) && (
           <div className="mt-4">
             <ThesisCard thesis={thesisData!} isLoading={thesisLoading} />
           </div>
         )}
 
-        {/* RSI */}
         {thesisData?.technical?.rsi != null && (
           <div className="mt-4">
             <RSIGauge value={thesisData.technical.rsi} ticker={thesisData.ticker} />

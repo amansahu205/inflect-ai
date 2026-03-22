@@ -101,9 +101,7 @@ const AppResearch = () => {
   const [activeQueryId, setActiveQueryId] = useState<string | null>(null);
   const [latencyMs, setLatencyMs] = useState<number | null>(null);
 
-  // Voice recorder
   const { startRecording, stopRecording, audioBlob, isRecording, audioLevel } = useVoiceRecorder();
-  const silenceTimerRef = useState<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -123,7 +121,6 @@ const AppResearch = () => {
     })();
   }, [user]);
 
-  // Voice: silence detection
   useEffect(() => {
     if (!isRecording) return;
     if (audioLevel < 0.02) {
@@ -132,7 +129,6 @@ const AppResearch = () => {
     }
   }, [audioLevel, isRecording, stopRecording]);
 
-  // Voice: transcribe
   useEffect(() => {
     if (!audioBlob || voiceState !== "processing") return;
     let cancelled = false;
@@ -209,7 +205,6 @@ const AppResearch = () => {
       }
     }
 
-    // TTS
     const ttsText = result.intent_type === "price_check" && quote
       ? `${quote.ticker} is at $${quote.price.toFixed(2)}, ${quote.direction} ${Math.abs(quote.change_percent).toFixed(1)} percent`
       : result.answer.slice(0, 200);
@@ -278,8 +273,20 @@ const AppResearch = () => {
 
   return (
     <div className="flex h-screen" style={{ background: "hsl(var(--background))" }}>
+      {/* Volumetric background glows */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <div style={{
+          position: "absolute", top: "15%", left: "5%", width: "45%", height: "50%",
+          background: "radial-gradient(ellipse, rgba(0, 212, 255, 0.04) 0%, transparent 70%)",
+        }} />
+        <div style={{
+          position: "absolute", bottom: "10%", right: "5%", width: "40%", height: "45%",
+          background: "radial-gradient(ellipse, rgba(240, 165, 0, 0.03) 0%, transparent 70%)",
+        }} />
+      </div>
+
       {/* Sidebar */}
-      <div className="shrink-0" style={{ width: 200 }}>
+      <div className="shrink-0 relative z-10" style={{ width: 200 }}>
         <ResearchSidebar
           queries={queries}
           activeQueryId={activeQueryId}
@@ -289,9 +296,7 @@ const AppResearch = () => {
       </div>
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Ticker bar area — inherits from AppLayout */}
-
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative z-10">
         {/* Content grid */}
         <div className="flex-1 overflow-y-auto p-4">
           <div
@@ -302,7 +307,7 @@ const AppResearch = () => {
               minHeight: "calc(100vh - 200px)",
             }}
           >
-            {/* Main analysis output — spans most of center */}
+            {/* Main analysis output */}
             <div style={{ gridRow: "1 / 3" }}>
               <AnalysisOutputCard
                 answerData={answerData}
@@ -338,7 +343,7 @@ const AppResearch = () => {
                 <MarketDataWidget />
               </div>
               <div className="w-1/2">
-                <div className="glass rounded-xl overflow-hidden h-full" style={{ border: "1px solid hsl(var(--border))" }}>
+                <div className="glass-panel glass-edge-purple overflow-hidden h-full">
                   <JarvisMetricsRow
                     queryCount={queries.length}
                     activeTicker={sessionTicker}
@@ -349,12 +354,11 @@ const AppResearch = () => {
               </div>
             </div>
 
-            {/* Bottom right — empty or additional widget */}
             <div />
           </div>
         </div>
 
-        {/* Prompt bar fixed at bottom */}
+        {/* Prompt bar */}
         <div className="shrink-0 p-4 pt-0">
           <ResearchPromptBar
             onSubmit={handleTextSubmit}
@@ -368,23 +372,23 @@ const AppResearch = () => {
         <div
           className="shrink-0 flex items-center justify-between px-6"
           style={{
-            height: 36,
-            borderTop: "1px solid hsl(var(--border))",
-            background: "hsl(var(--card))",
+            height: 32,
+            borderTop: "1px solid rgba(255,255,255,0.04)",
+            background: "rgba(6, 10, 18, 0.95)",
           }}
         >
           <div className="flex items-center gap-4">
-            <span className="font-mono" style={{ color: "hsl(var(--muted-foreground))", fontSize: 11 }}>
+            <span className="font-mono" style={{ color: "hsl(var(--muted-foreground))", fontSize: 10 }}>
               Portfolio: <span style={{ color: "hsl(var(--foreground))", fontWeight: 600 }}>${(usePortfolioStore.getState().totalValue || 0).toLocaleString()}</span>
             </span>
-            <span className="font-mono" style={{ color: "hsl(var(--muted-foreground))", fontSize: 11 }}>
-              Buying Power: <span style={{ color: "hsl(var(--primary))", fontWeight: 600 }}>${(usePortfolioStore.getState().buyingPower || 0).toLocaleString()}</span>
+            <span className="font-mono" style={{ color: "hsl(var(--muted-foreground))", fontSize: 10 }}>
+              Other Value: <span style={{ color: "hsl(var(--primary))", fontWeight: 600 }}>${(usePortfolioStore.getState().buyingPower || 0).toLocaleString()}</span>
             </span>
-            <span className="font-mono" style={{ color: "hsl(var(--muted-foreground))", fontSize: 11 }}>
-              Queries: <span style={{ fontWeight: 600 }}>{queries.length}</span>
+            <span className="font-mono" style={{ color: "hsl(var(--muted-foreground))", fontSize: 10 }}>
+              Chat Length:{queries.length}
             </span>
           </div>
-          <span className="font-mono" style={{ color: "hsl(var(--muted-foreground))", fontSize: 10 }}>
+          <span className="font-mono" style={{ color: "hsl(var(--muted-foreground))", fontSize: 9 }}>
             Portfolio
           </span>
         </div>

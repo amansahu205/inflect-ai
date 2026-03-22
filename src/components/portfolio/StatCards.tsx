@@ -4,6 +4,7 @@ interface StatCardsProps {
   portfolioValue: number;
   todayPnl: number;
   buyingPower: number;
+  positionCount: number;
   isLoading: boolean;
 }
 

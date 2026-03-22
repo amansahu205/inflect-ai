@@ -6,7 +6,7 @@ export interface ChartData {
   filingDates?: string[];
 }
 
-const USE_BACKEND = !!import.meta.env.VITE_API_URL;
+const USE_BACKEND = true;
 
 export async function getChartData(
   ticker: string,

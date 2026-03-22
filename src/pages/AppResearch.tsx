@@ -23,7 +23,7 @@ import type { AnalyzeResult } from "@/api/query";
 import type { VoiceState } from "@/components/voice/VoiceButton";
 
 type QueryRow = Query;
-const USE_BACKEND = !!import.meta.env.VITE_API_URL;
+const USE_BACKEND = true;
 
 // --- Mock fallbacks ---
 const mockAnalyze = (text: string): AnalyzeResult => {

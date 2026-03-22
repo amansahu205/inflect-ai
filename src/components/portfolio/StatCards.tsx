@@ -4,6 +4,7 @@ interface StatCardsProps {
   portfolioValue: number;
   todayPnl: number;
   buyingPower: number;
+  positionCount: number;
   isLoading: boolean;
 }
 
@@ -18,7 +19,7 @@ const Shimmer = () => (
   />
 );
 
-const StatCards = ({ portfolioValue, todayPnl, buyingPower, isLoading }: StatCardsProps) => {
+const StatCards = ({ portfolioValue, todayPnl, buyingPower, positionCount, isLoading }: StatCardsProps) => {
   const cards = [
     { label: "PORTFOLIO VALUE", value: formatCurrency(portfolioValue), color: "hsl(var(--foreground))" },
     {
@@ -27,7 +28,7 @@ const StatCards = ({ portfolioValue, todayPnl, buyingPower, isLoading }: StatCar
       color: todayPnl >= 0 ? "hsl(var(--bull))" : "hsl(var(--bear))",
     },
     { label: "BUYING POWER", value: formatCurrency(buyingPower), color: "hsl(var(--cyan))" },
-    { label: "AI SENTIMENT", value: "88% BULLISH", color: "hsl(var(--bull))" },
+    { label: "POSITIONS", value: String(positionCount), color: "hsl(var(--gold))" },
   ];
 
   return (

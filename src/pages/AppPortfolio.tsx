@@ -72,6 +72,7 @@ const AppPortfolio = () => {
             portfolioValue={portfolioValue}
             todayPnl={todayPnl}
             buyingPower={buyingPower}
+            positionCount={positions.length}
             isLoading={isLoading}
           />
           <EquityCurve />

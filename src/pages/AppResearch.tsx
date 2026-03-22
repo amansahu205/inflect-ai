@@ -168,7 +168,10 @@ const AppResearch = () => {
     let result: AnalyzeResult;
     try {
       result = USE_BACKEND ? await analyzeQuery(text, { ticker: sessionTicker, timeframe: sessionTimeframe }) : mockAnalyze(text);
-    } catch { result = mockAnalyze(text); }
+    } catch (err) {
+      console.error("[runPipeline] analyzeQuery failed, using mock fallback:", err);
+      result = mockAnalyze(text);
+    }
 
     if (result.ticker) setTicker(result.ticker);
 
@@ -180,7 +183,15 @@ const AppResearch = () => {
     }
 
     if (result.metric) {
-      metric = { metric: result.metric, value: result.metric.includes("Margin") ? "44.1%" : "$394.3B", period: result.timeframe || "Q4 2023", change: "+0.8% YoY", changeDirection: "up" };
+      // Use values from backend response when available; extract numeric value from answer text
+      const extractedValue = result.answer.match(/(\$[\d,.]+[BMK]?|[\d.]+%)/)?.[0];
+      metric = {
+        metric: result.metric,
+        value: extractedValue || "N/A",
+        period: result.timeframe || "—",
+        change: undefined,
+        changeDirection: undefined,
+      };
     }
 
     if (user) {

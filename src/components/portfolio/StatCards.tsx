@@ -19,7 +19,7 @@ const Shimmer = () => (
   />
 );
 
-const StatCards = ({ portfolioValue, todayPnl, buyingPower, isLoading }: StatCardsProps) => {
+const StatCards = ({ portfolioValue, todayPnl, buyingPower, positionCount, isLoading }: StatCardsProps) => {
   const cards = [
     { label: "PORTFOLIO VALUE", value: formatCurrency(portfolioValue), color: "hsl(var(--foreground))" },
     {

@@ -129,12 +129,19 @@ const AppResearch = () => {
     let cancelled = false;
     (async () => {
       try {
+        setVoiceProcessingPhase("transcribe");
         const r = await transcribeAudio(audioBlob);
-        if (!cancelled) submitQuery(r.transcript);
+        if (!cancelled) {
+          setVoiceProcessingPhase("analyze");
+          await submitQuery(r.transcript);
+        }
       } catch {
         if (!cancelled) showToast("Transcription failed", "error");
       } finally {
-        if (!cancelled) setVoiceState("idle");
+        if (!cancelled) {
+          setVoiceState("idle");
+          setVoiceProcessingPhase("transcribe");
+        }
       }
     })();
     return () => { cancelled = true; };

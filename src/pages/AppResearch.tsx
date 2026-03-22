@@ -304,7 +304,7 @@ const AppResearch = () => {
             style={{
               gridTemplateColumns: "1fr 340px",
               gridTemplateRows: "1fr auto auto",
-              minHeight: "calc(100vh - 200px)",
+              minHeight: "calc(100vh - 340px)",
             }}
           >
             {/* Main analysis output */}

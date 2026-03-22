@@ -309,7 +309,7 @@ const AppResearch = () => {
         </div>
 
         {/* Tile 2/3 — HUD Voice or Chat (center top) */}
-        <div style={{ gridColumn: "2 / 4", position: "relative" }}>
+        <div style={{ gridColumn: "2 / 4", position: "relative", overflow: "hidden", minHeight: 0 }}>
           {/* Mode toggle in top right */}
           <div style={{ position: "absolute", top: 12, right: 16, zIndex: 10 }}>
             <ModeToggle activeMode={mode} onChange={handleModeChange} />

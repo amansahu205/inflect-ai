@@ -1,22 +1,39 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
+import { usePortfolioStore } from "@/store/portfolioStore";
+import { useTicker, type MarketStatus } from "@/hooks/useTicker";
 import { supabase } from "@/integrations/supabase/client";
-import logo from "@/assets/inflect-logo.png";
+import { formatCurrency } from "@/utils/formatters";
 
 const navLinks = [
-  { to: "/app/research", label: "Research" },
+  { to: "/", label: "Home" },
   { to: "/app/portfolio", label: "Portfolio" },
+  { to: "/app/research", label: "Research" },
 ];
+
+const statusLabel: Record<MarketStatus, { text: string; color: string }> = {
+  live: { text: "MARKET OPEN", color: "hsl(var(--bull))" },
+  premarket: { text: "PRE-MARKET", color: "hsl(var(--gold))" },
+  afterhours: { text: "AFTER HOURS", color: "hsl(var(--gold))" },
+  closed: { text: "MARKET CLOSED", color: "hsl(var(--muted-foreground))" },
+};
 
 const NavBar = () => {
   const { user } = useAuthStore();
+  const { buyingPower } = usePortfolioStore();
+  const { quotes, marketStatus } = useTicker();
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  const initial = user?.email?.charAt(0).toUpperCase() || "?";
+  const initial = user?.email ? user.email.substring(0, 2).toUpperCase() : "?";
+  const ms = statusLabel[marketStatus];
+
+  // Find S&P 500 or a proxy
+  const spx = quotes.find((q) => q.ticker === "SPY") || quotes[0];
+  const spxUp = spx ? spx.direction === "up" : true;
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -39,18 +56,17 @@ const NavBar = () => {
         background: "rgba(6, 10, 18, 0.92)",
         backdropFilter: "blur(16px)",
         WebkitBackdropFilter: "blur(16px)",
-        borderBottom: "1px solid rgba(255,255,255,0.06)",
+        borderBottom: "1px solid hsl(var(--border))",
         padding: "0 32px",
       }}
     >
-      <img
-        src={logo}
-        alt="Inflect"
-        style={{ height: 32, cursor: "pointer" }}
-        className="object-contain"
-        onClick={() => navigate("/")}
-      />
+      {/* Left: Logo */}
+      <div className="flex items-center gap-1 cursor-pointer" onClick={() => navigate("/")}>
+        <span className="text-xl font-bold" style={{ color: "white" }}>in</span>
+        <span className="text-xl font-bold" style={{ color: "hsl(var(--gold))" }}>flect</span>
+      </div>
 
+      {/* Center: Tabs */}
       <div className="flex items-center gap-6">
         {navLinks.map((link) => {
           const isActive = location.pathname === link.to;
@@ -58,27 +74,48 @@ const NavBar = () => {
             <Link
               key={link.to}
               to={link.to}
-              className="transition-colors duration-200 font-mono"
+              className="transition-colors duration-200"
               style={{
-                color: isActive ? "hsl(var(--accent))" : "hsl(var(--muted-foreground))",
+                color: isActive ? "white" : "hsl(var(--muted-foreground))",
                 fontSize: 13,
                 fontWeight: isActive ? 600 : 400,
                 paddingBottom: 4,
-                borderBottom: isActive ? "2px solid hsl(var(--accent))" : "2px solid transparent",
-                letterSpacing: "0.02em",
+                borderBottom: isActive ? "2px solid hsl(var(--gold))" : "2px solid transparent",
               }}
-              onMouseEnter={(e) => {
-                if (!isActive) e.currentTarget.style.color = "hsl(var(--foreground))";
-              }}
-              onMouseLeave={(e) => {
-                if (!isActive) e.currentTarget.style.color = "hsl(var(--muted-foreground))";
-              }}
+              onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.color = "white"; }}
+              onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.color = "hsl(var(--muted-foreground))"; }}
             >
               {link.label}
             </Link>
           );
         })}
+      </div>
 
+      {/* Right: Status + Buying Power + Avatar */}
+      <div className="flex items-center gap-5">
+        {/* Market status */}
+        <div className="flex items-center gap-1.5">
+          <span className="relative flex h-2 w-2">
+            {marketStatus === "live" && <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ background: ms.color }} />}
+            <span className="relative inline-flex rounded-full h-2 w-2" style={{ background: ms.color }} />
+          </span>
+          <span className="font-mono text-xs" style={{ color: ms.color }}>{ms.text}</span>
+        </div>
+
+        {/* S&P proxy */}
+        {spx && (
+          <span className="font-mono text-xs" style={{ color: spxUp ? "hsl(var(--bull))" : "hsl(var(--bear))" }}>
+            S&P 500 {spxUp ? "+" : ""}{spx.change.toFixed(2)}%
+          </span>
+        )}
+
+        {/* Buying Power */}
+        <div className="flex items-center gap-1.5">
+          <span className="text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>Buying Power</span>
+          <span className="font-mono text-xs font-bold" style={{ color: "hsl(var(--cyan))" }}>{formatCurrency(buyingPower)}</span>
+        </div>
+
+        {/* Avatar */}
         <div className="relative" ref={ref}>
           <button
             onClick={() => setOpen(!open)}
@@ -87,12 +124,12 @@ const NavBar = () => {
               width: 32,
               height: 32,
               borderRadius: "50%",
-              background: "rgba(0, 212, 255, 0.12)",
-              border: "1px solid rgba(0, 212, 255, 0.3)",
-              color: "hsl(var(--accent))",
-              fontSize: 13,
+              background: "linear-gradient(135deg, hsl(var(--cyan)), hsl(210, 80%, 50%))",
+              color: "white",
+              fontSize: 12,
               fontWeight: 700,
               cursor: "pointer",
+              border: "none",
             }}
           >
             {initial}

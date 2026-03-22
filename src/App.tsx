@@ -35,6 +35,16 @@ const AnimatedRoutes = () => {
         <Route path="/register" element={<PageTransition><Register /></PageTransition>} />
         <Route path="/demo" element={<PageTransition><Demo /></PageTransition>} />
         <Route
+          path="/app/home"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <PageTransition><AppHome /></PageTransition>
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/app/research"
           element={
             <ProtectedRoute>

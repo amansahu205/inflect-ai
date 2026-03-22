@@ -12,7 +12,7 @@ interface ResearchSidebarProps {
 }
 
 const navItems = [
-  { icon: "home", label: "Home", to: "/" },
+  { icon: "home", label: "Home", to: "/app/home" },
   { icon: "research", label: "Research", to: "/app/research" },
   { icon: "markets", label: "Markets", to: "/app/portfolio" },
   { icon: "structures", label: "Structures", to: "/app/portfolio" },

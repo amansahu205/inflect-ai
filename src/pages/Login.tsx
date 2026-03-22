@@ -11,7 +11,7 @@ const Login = () => {
   const { session, loading } = useAuthStore();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const redirectTo = searchParams.get("redirect_to") || "/app/research";
+  const redirectTo = searchParams.get("redirect_to") || "/app/home";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -21,7 +21,7 @@ const Login = () => {
   const attemptsRef = useRef(0);
   const lockedUntilRef = useRef(0);
 
-  if (!loading && session) return <Navigate to="/app/research" replace />;
+  if (!loading && session) return <Navigate to="/app/home" replace />;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

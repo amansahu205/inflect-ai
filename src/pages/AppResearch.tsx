@@ -15,6 +15,7 @@ import ResearchPromptBar from "@/components/research/ResearchPromptBar";
 import ResearchVisualizationsPanel from "@/components/research/ResearchVisualizationsPanel";
 import ChatMessage, { type ChatMsg } from "@/components/research/ChatMessage";
 import VoiceOverlay from "@/components/research/VoiceOverlay";
+import type { ProcessingPhase } from "@/components/research/VoiceOverlay";
 import { EXAMPLE_QUERIES } from "@/utils/constants";
 import type { AnswerResult, ThesisResult, TradeOrder, StockQuote, Query } from "@/types/api";
 import type { AnalyzeResult } from "@/api/query";
@@ -87,6 +88,7 @@ const AppResearch = () => {
   const [tradeLoading, setTradeLoading] = useState(false);
   const [fillResult, setFillResult] = useState<{ fill_price: number } | null>(null);
   const [voiceState, setVoiceState] = useState<VoiceState>("idle");
+  const [voiceProcessingPhase, setVoiceProcessingPhase] = useState<ProcessingPhase>("transcribe");
 
   // Right panel state
   const [answerData, setAnswerData] = useState<AnswerResult | null>(null);
@@ -127,12 +129,19 @@ const AppResearch = () => {
     let cancelled = false;
     (async () => {
       try {
+        setVoiceProcessingPhase("transcribe");
         const r = await transcribeAudio(audioBlob);
-        if (!cancelled) submitQuery(r.transcript);
+        if (!cancelled) {
+          setVoiceProcessingPhase("analyze");
+          await submitQuery(r.transcript);
+        }
       } catch {
         if (!cancelled) showToast("Transcription failed", "error");
       } finally {
-        if (!cancelled) setVoiceState("idle");
+        if (!cancelled) {
+          setVoiceState("idle");
+          setVoiceProcessingPhase("transcribe");
+        }
       }
     })();
     return () => { cancelled = true; };
@@ -152,6 +161,7 @@ const AppResearch = () => {
   const handleVoiceCancel = useCallback(() => {
     if (isRecording) stopRecording();
     setVoiceState("idle");
+    setVoiceProcessingPhase("transcribe");
   }, [isRecording, stopRecording]);
 
   const runPipeline = useCallback(async (text: string) => {
@@ -329,7 +339,7 @@ const AppResearch = () => {
         {/* Voice overlay */}
         {voiceState !== "idle" && (
           <div className="px-6 pb-2">
-            <VoiceOverlay voiceState={voiceState} onCancel={handleVoiceCancel} />
+            <VoiceOverlay voiceState={voiceState} processingPhase={voiceProcessingPhase} onCancel={handleVoiceCancel} />
           </div>
         )}
 

@@ -209,9 +209,12 @@ const AppResearch = () => {
 
     if (result.intent_type === "trade") {
       const trade = detectTradeIntent(text);
-      if (trade?.ticker && trade?.quantity) {
+      const tradeTicker = trade?.ticker || result.ticker;
+      const tradeSide = trade?.side || (/\b(sell|dump|exit)\b/i.test(text) ? "sell" : "buy");
+      const tradeQty = trade?.quantity || 1;
+      if (tradeTicker) {
         const estPrice = quote?.price || 189.5;
-        setPendingOrder({ ticker: trade.ticker, side: trade.side, quantity: trade.quantity, order_type: "market", estimated_price: estPrice, estimated_total: estPrice * trade.quantity });
+        setPendingOrder({ ticker: tradeTicker, side: tradeSide, quantity: tradeQty, order_type: "market", estimated_price: estPrice, estimated_total: estPrice * tradeQty });
       }
     }
 

@@ -26,6 +26,55 @@ const QuickTrade = ({ onTradeComplete, quotes: liveQuotes }: Props) => {
   const [showConfirm, setShowConfirm] = useState(false);
   const [executing, setExecuting] = useState(false);
 
+  // Search autocomplete state
+  const [searchResults, setSearchResults] = useState<{ symbol: string; description: string }[]>([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [searching, setSearching] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const searchTicker = useCallback((query: string) => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (query.length < 1) { setSearchResults([]); setShowDropdown(false); return; }
+    debounceRef.current = setTimeout(async () => {
+      setSearching(true);
+      try {
+        const res = await fetch(`${API_URL}/api/v1/market/quote?ticker=${query}`);
+        if (res.ok) {
+          const data = await res.json();
+          // Build a single result from the quote endpoint
+          setSearchResults([{ symbol: query.toUpperCase(), description: data.ticker || query.toUpperCase() }]);
+          setShowDropdown(true);
+        } else {
+          setSearchResults([]);
+          setShowDropdown(false);
+        }
+      } catch {
+        setSearchResults([]);
+        setShowDropdown(false);
+      }
+      setSearching(false);
+    }, 300);
+  }, []);
+
+  const selectTicker = useCallback((symbol: string) => {
+    setTicker(symbol);
+    setShowDropdown(false);
+    setSearchResults([]);
+    fetchPrice(symbol);
+  }, []);
+
   const fetchPrice = useCallback(async (t: string) => {
     if (!t) { setEstPrice(null); return; }
     setFetchingPrice(true);

@@ -339,7 +339,7 @@ const AppResearch = () => {
         {/* Voice overlay */}
         {voiceState !== "idle" && (
           <div className="px-6 pb-2">
-            <VoiceOverlay voiceState={voiceState} onCancel={handleVoiceCancel} />
+            <VoiceOverlay voiceState={voiceState} processingPhase={voiceProcessingPhase} onCancel={handleVoiceCancel} />
           </div>
         )}
 

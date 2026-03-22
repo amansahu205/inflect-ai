@@ -90,20 +90,6 @@ const QuickTrade = ({ onTradeComplete, quotes: liveQuotes }: Props) => {
     fetchPrice(symbol);
   }, [fetchPrice]);
 
-  const fetchPrice = useCallback(async (t: string) => {
-    if (!t) { setEstPrice(null); return; }
-    setFetchingPrice(true);
-    try {
-      const res = await fetch(`${API_URL}/api/v1/market/quote?ticker=${t}`);
-      if (res.ok) {
-        const data = await res.json();
-        setEstPrice(data.price);
-      } else {
-        setEstPrice(null);
-      }
-    } catch { setEstPrice(null); }
-    setFetchingPrice(false);
-  }, []);
 
   const estTotal = estPrice ? estPrice * quantity : 0;
   const fillPrice = estPrice ? estPrice * (side === "buy" ? 1.0005 : 0.9995) : 0;

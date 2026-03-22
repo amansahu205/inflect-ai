@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { formatCurrency } from "@/utils/formatters";
 
 const navLinks = [
-  { to: "/", label: "Home" },
+  { to: "/app/portfolio", label: "Home" },
   { to: "/app/portfolio", label: "Portfolio" },
   { to: "/app/research", label: "Research" },
 ];

@@ -295,11 +295,12 @@ const AppResearch = () => {
         className="relative z-[1]"
         style={{
           display: "grid",
-          gridTemplateColumns: "280px 1fr 1fr 320px",
+          gridTemplateColumns: "260px 1fr 1fr 300px",
           gridTemplateRows: "1fr auto auto",
           gap: 1,
           background: "rgba(240,165,0,0.08)",
           height: "calc(100vh - 96px - 48px)",
+          overflow: "hidden",
         }}
       >
         {/* Tile 1 — Query Log (full left) */}

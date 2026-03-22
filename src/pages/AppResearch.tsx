@@ -4,25 +4,24 @@ import { useSessionStore } from "@/store/sessionStore";
 import { usePortfolioStore } from "@/store/portfolioStore";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { analyzeQuery } from "@/api/query";
+import { analyzeQuery, transcribeAudio } from "@/api/query";
 import { getChartData } from "@/api/chart";
 import { getQuote } from "@/api/market";
 import { executeTrade as executeTradeApi } from "@/api/trades";
+import useVoiceRecorder from "@/hooks/useVoiceRecorder";
+import { useInflectToast } from "@/components/ui/InflectToast";
 import TradeModal from "@/components/trading/TradeModal";
-import ModeToggle from "@/components/ui/ModeToggle";
-import JarvisCanvas from "@/components/jarvis/JarvisCanvas";
-import JarvisQueryLog from "@/components/jarvis/JarvisQueryLog";
-import JarvisHudCenter from "@/components/jarvis/JarvisHudCenter";
-import JarvisChatPanel from "@/components/jarvis/JarvisChatPanel";
-import JarvisOutputPanel from "@/components/jarvis/JarvisOutputPanel";
+import ResearchSidebar from "@/components/research/ResearchSidebar";
+import AnalysisOutputCard from "@/components/research/AnalysisOutputCard";
+import VisualizationCard from "@/components/research/VisualizationCard";
+import PortfolioWidget from "@/components/research/PortfolioWidget";
+import MarketDataWidget from "@/components/research/MarketDataWidget";
+import ResearchPromptBar from "@/components/research/ResearchPromptBar";
 import JarvisMetricsRow from "@/components/jarvis/JarvisMetricsRow";
-import JarvisInputBar from "@/components/jarvis/JarvisInputBar";
-import type { ChatMessage } from "@/components/chat/ChatThread";
 import type { AnswerResult, ThesisResult, TradeOrder, StockQuote, Query } from "@/types/api";
 import type { AnalyzeResult } from "@/api/query";
 import type { VoiceState } from "@/components/voice/VoiceButton";
 
-type QueryRow = Query;
 const USE_BACKEND = true;
 
 // --- Mock fallbacks ---
@@ -82,20 +81,16 @@ const detectTradeIntent = (text: string) => {
 
 const AppResearch = () => {
   const { user } = useAuthStore();
-  const { mode, setMode, ticker: sessionTicker, timeframe: sessionTimeframe, setTicker, addAnswer, sessionId } = useSessionStore();
+  const { ticker: sessionTicker, timeframe: sessionTimeframe, setTicker, addAnswer, sessionId } = useSessionStore();
   const { buyingPower, setBuyingPower, setTotalValue } = usePortfolioStore();
-  const [queries, setQueries] = useState<QueryRow[]>([]);
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
-  const [chatLoading, setChatLoading] = useState(false);
+  const { showToast } = useInflectToast();
 
+  const [queries, setQueries] = useState<Query[]>([]);
   const [pendingOrder, setPendingOrder] = useState<TradeOrder | null>(null);
   const [tradeLoading, setTradeLoading] = useState(false);
   const [fillResult, setFillResult] = useState<{ fill_price: number } | null>(null);
-
-  const [voiceStateOverride, setVoiceStateOverride] = useState<"idle" | "playing" | null>(null);
   const [voiceState, setVoiceState] = useState<VoiceState>("idle");
 
-  // Output state
   const [selectedOutput, setSelectedOutput] = useState<string | null>(null);
   const [answerData, setAnswerData] = useState<AnswerResult | null>(null);
   const [stockQuote, setStockQuote] = useState<StockQuote | null>(null);
@@ -105,19 +100,18 @@ const AppResearch = () => {
   const [chartData, setChartData] = useState<any>(null);
   const [activeQueryId, setActiveQueryId] = useState<string | null>(null);
   const [latencyMs, setLatencyMs] = useState<number | null>(null);
-  const [textInput, setTextInput] = useState("");
+
+  // Voice recorder
+  const { startRecording, stopRecording, audioBlob, isRecording, audioLevel } = useVoiceRecorder();
+  const silenceTimerRef = useState<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const { data } = await supabase.from("profiles").select("buying_power, default_mode").eq("id", user.id).single();
-      if (data) {
-        setBuyingPower(data.buying_power);
-        setTotalValue(data.buying_power);
-        if (data.default_mode === "chat" || data.default_mode === "voice") setMode(data.default_mode as "voice" | "chat");
-      }
+      const { data } = await supabase.from("profiles").select("buying_power").eq("id", user.id).single();
+      if (data) { setBuyingPower(data.buying_power); setTotalValue(data.buying_power); }
     })();
-  }, [user, setBuyingPower, setTotalValue, setMode]);
+  }, [user, setBuyingPower, setTotalValue]);
 
   useEffect(() => {
     if (!user) return;
@@ -125,14 +119,46 @@ const AppResearch = () => {
       const { data } = await supabase.from("queries").select("*").eq("user_id", user.id)
         .gte("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
         .order("created_at", { ascending: false }).limit(20);
-      if (data) setQueries(data as unknown as QueryRow[]);
+      if (data) setQueries(data as unknown as Query[]);
     })();
   }, [user]);
 
-  const handleModeChange = useCallback(async (newMode: "voice" | "chat") => {
-    setMode(newMode);
-    if (user) await supabase.from("profiles").update({ default_mode: newMode }).eq("id", user.id);
-  }, [user, setMode]);
+  // Voice: silence detection
+  useEffect(() => {
+    if (!isRecording) return;
+    if (audioLevel < 0.02) {
+      const timer = setTimeout(() => { stopRecording(); setVoiceState("processing"); }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [audioLevel, isRecording, stopRecording]);
+
+  // Voice: transcribe
+  useEffect(() => {
+    if (!audioBlob || voiceState !== "processing") return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const r = await transcribeAudio(audioBlob);
+        if (!cancelled) submitQuery(r.transcript);
+      } catch {
+        if (!cancelled) showToast("Transcription failed", "error");
+      } finally {
+        if (!cancelled) setVoiceState("idle");
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [audioBlob, voiceState]);
+
+  const handleMicClick = useCallback(async () => {
+    if (voiceState === "idle") {
+      const granted = await startRecording();
+      if (!granted) { showToast("Microphone access denied", "error"); return; }
+      setVoiceState("recording");
+    } else if (voiceState === "recording") {
+      stopRecording();
+      setVoiceState("processing");
+    }
+  }, [voiceState, startRecording, stopRecording, showToast]);
 
   const runPipeline = useCallback(async (text: string) => {
     const start = performance.now();
@@ -155,16 +181,15 @@ const AppResearch = () => {
     }
 
     if (user) {
-      const { data } = await supabase.from("queries").insert({ user_id: user.id, session_id: sessionId, transcript: text, intent_type: result.intent_type, response_text: result.answer, ticker: result.ticker, mode }).select("*").single();
-      if (data) setQueries((prev) => [data as unknown as QueryRow, ...prev]);
+      const { data } = await supabase.from("queries").insert({ user_id: user.id, session_id: sessionId, transcript: text, intent_type: result.intent_type, response_text: result.answer, ticker: result.ticker, mode: "voice" }).select("*").single();
+      if (data) setQueries((prev) => [data as unknown as Query, ...prev]);
     }
 
     const answerResult: AnswerResult = { answer: result.answer, intent_type: result.intent_type, ticker: result.ticker, confidence: result.confidence_level, source: result.source as AnswerResult["source"], citation: result.citation };
     addAnswer(answerResult);
-
     setLatencyMs(Math.round(performance.now() - start));
     return { result, quote, metricData: metric };
-  }, [user, sessionTicker, sessionTimeframe, setTicker, addAnswer, sessionId, mode]);
+  }, [user, sessionTicker, sessionTimeframe, setTicker, addAnswer, sessionId]);
 
   const submitQuery = useCallback(async (text: string) => {
     setThesisData(null); setThesisLoading(false); setChartData(null); setActiveQueryId(null);
@@ -184,43 +209,17 @@ const AppResearch = () => {
       }
     }
 
-    if (mode === "voice") {
-      const ttsText = result.intent_type === "price_check" && quote
-        ? `${quote.ticker} is at $${quote.price.toFixed(2)}, ${quote.direction} ${Math.abs(quote.change_percent).toFixed(1)} percent today`
-        : result.answer;
-      speakText(ttsText, () => setVoiceStateOverride("playing"), () => setVoiceStateOverride("idle"));
-    }
-  }, [runPipeline, mode]);
-
-  const handleChatSubmit = useCallback(async (text: string) => {
-    if (!user) return;
-    const userMsg: ChatMessage = { id: crypto.randomUUID(), role: "user", content: text, timestamp: new Date().toISOString() };
-    setChatMessages((prev) => [...prev, userMsg]);
-    setChatLoading(true);
-    try {
-      const { result } = await runPipeline(text);
-      const assistantMsg: ChatMessage = { id: crypto.randomUUID(), role: "assistant", content: result.answer, timestamp: new Date().toISOString() };
-      setChatMessages((prev) => [...prev, assistantMsg]);
-
-      const ad: AnswerResult = { answer: result.answer, intent_type: result.intent_type, ticker: result.ticker, confidence: result.confidence_level, source: result.source as AnswerResult["source"], citation: result.citation };
-      setAnswerData(ad);
-    } catch {
-      setChatMessages((prev) => [...prev, { id: crypto.randomUUID(), role: "assistant", content: "Something went wrong.", timestamp: new Date().toISOString() }]);
-    } finally {
-      setChatLoading(false);
-    }
-  }, [user, runPipeline]);
-
-  const handleTranscript = useCallback((text: string, confidence: number) => {
-    if (confidence >= 0.8) { submitQuery(text); } else { setTextInput(text); }
-  }, [submitQuery]);
+    // TTS
+    const ttsText = result.intent_type === "price_check" && quote
+      ? `${quote.ticker} is at $${quote.price.toFixed(2)}, ${quote.direction} ${Math.abs(quote.change_percent).toFixed(1)} percent`
+      : result.answer.slice(0, 200);
+    speakText(ttsText);
+  }, [runPipeline]);
 
   const handleTextSubmit = useCallback((text: string) => {
     if (!text.trim()) return;
-    if (mode === "chat") { handleChatSubmit(text); } else { submitQuery(text); }
-  }, [mode, handleChatSubmit, submitQuery]);
-
-  const handleChipClick = useCallback((text: string) => handleTextSubmit(text), [handleTextSubmit]);
+    submitQuery(text);
+  }, [submitQuery]);
 
   const handleGenerateThesis = useCallback(async () => {
     const ticker = answerData?.ticker;
@@ -278,88 +277,121 @@ const AppResearch = () => {
   const handleTradeCancel = useCallback(() => { setPendingOrder(null); setTradeLoading(false); setFillResult(null); }, []);
 
   return (
-    <>
-      <JarvisCanvas />
+    <div className="flex h-screen" style={{ background: "hsl(var(--background))" }}>
+      {/* Sidebar */}
+      <div className="shrink-0" style={{ width: 200 }}>
+        <ResearchSidebar
+          queries={queries}
+          activeQueryId={activeQueryId}
+          onSelect={handleQuerySelect}
+          onClear={handleClearQueries}
+        />
+      </div>
 
-      {/* Scanline overlay */}
-      <div
-        className="fixed inset-0 pointer-events-none"
-        style={{
-          zIndex: 999,
-          background: "repeating-linear-gradient(transparent 0px, transparent 3px, rgba(0,0,0,0.03) 3px, rgba(0,0,0,0.03) 4px)",
-        }}
-      />
+      {/* Main content */}
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        {/* Ticker bar area — inherits from AppLayout */}
 
-      {/* Dashboard grid */}
-      <div
-        className="relative z-[1]"
-        style={{
-          display: "grid",
-          gridTemplateColumns: "260px 1fr 1fr 300px",
-          gridTemplateRows: "1fr auto auto",
-          gap: 1,
-          background: "rgba(240,165,0,0.08)",
-          height: "calc(100vh - 96px - 48px)",
-          overflow: "hidden",
-        }}
-      >
-        {/* Tile 1 — Query Log (full left) */}
-        <div style={{ gridRow: "1 / -1" }}>
-          <JarvisQueryLog queries={queries} activeQueryId={activeQueryId} onSelect={handleQuerySelect} onClear={handleClearQueries} />
-        </div>
+        {/* Content grid */}
+        <div className="flex-1 overflow-y-auto p-4">
+          <div
+            className="grid gap-4 h-full"
+            style={{
+              gridTemplateColumns: "1fr 340px",
+              gridTemplateRows: "1fr auto auto",
+              minHeight: "calc(100vh - 200px)",
+            }}
+          >
+            {/* Main analysis output — spans most of center */}
+            <div style={{ gridRow: "1 / 3" }}>
+              <AnalysisOutputCard
+                answerData={answerData}
+                stockQuote={stockQuote}
+                metricData={metricData}
+                thesisData={thesisData}
+                thesisLoading={thesisLoading}
+                selectedOutput={selectedOutput}
+                onChipClick={handleTextSubmit}
+                onGenerateThesis={handleGenerateThesis}
+                onPlotTrend={handlePlotTrend}
+              />
+            </div>
 
-        {/* Tile 2/3 — HUD Voice or Chat (center top) */}
-        <div style={{ gridColumn: "2 / 4", position: "relative", overflow: "hidden", minHeight: 0 }}>
-          {/* Mode toggle in top right */}
-          <div style={{ position: "absolute", top: 12, right: 16, zIndex: 10 }}>
-            <ModeToggle activeMode={mode} onChange={handleModeChange} />
+            {/* Right column — chart */}
+            <div>
+              <VisualizationCard
+                chartData={chartData}
+                chartTitle={metricData?.metric || "Price"}
+                chartTicker={answerData?.ticker || sessionTicker || ""}
+                onPlotTrend={answerData?.ticker ? handlePlotTrend : undefined}
+              />
+            </div>
+
+            {/* Right column — portfolio widget */}
+            <div>
+              <PortfolioWidget />
+            </div>
+
+            {/* Bottom left — market data + metrics */}
+            <div className="flex gap-4">
+              <div className="w-1/2">
+                <MarketDataWidget />
+              </div>
+              <div className="w-1/2">
+                <div className="glass rounded-xl overflow-hidden h-full" style={{ border: "1px solid hsl(var(--border))" }}>
+                  <JarvisMetricsRow
+                    queryCount={queries.length}
+                    activeTicker={sessionTicker}
+                    confidence={answerData?.confidence || null}
+                    latencyMs={latencyMs}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom right — empty or additional widget */}
+            <div />
           </div>
-
-          {mode === "voice" ? (
-            <JarvisHudCenter onTranscript={handleTranscript} onStateChange={setVoiceState} disabled={false} />
-          ) : (
-            <JarvisChatPanel messages={chatMessages} isLoading={chatLoading} onSubmit={handleChatSubmit} />
-          )}
         </div>
 
-        {/* Tile 4 — Output (full right) */}
-        <div style={{ gridRow: "1 / -1" }}>
-          <JarvisOutputPanel
-            content={selectedOutput}
-            answerData={answerData}
-            stockQuote={stockQuote}
-            metricData={metricData}
-            thesisData={thesisData}
-            thesisLoading={thesisLoading}
-            chartData={chartData}
-            chartTitle={metricData?.metric || "Price"}
-            chartTicker={answerData?.ticker || undefined}
-            onChipClick={handleChipClick}
-            onGenerateThesis={handleGenerateThesis}
-            onPlotTrend={handlePlotTrend}
+        {/* Prompt bar fixed at bottom */}
+        <div className="shrink-0 p-4 pt-0">
+          <ResearchPromptBar
+            onSubmit={handleTextSubmit}
+            onMicClick={handleMicClick}
+            voiceState={voiceState}
+            disabled={false}
           />
         </div>
 
-        {/* Tile 5 — Metrics Row */}
-        <div style={{ gridColumn: "2 / 4" }}>
-          <JarvisMetricsRow
-            queryCount={queries.length}
-            activeTicker={sessionTicker}
-            confidence={answerData?.confidence || null}
-            latencyMs={latencyMs}
-          />
-        </div>
-
-        {/* Tile 6 — Input Bar (hidden in chat mode since chat has its own input) */}
-        {mode !== "chat" && (
-          <div style={{ gridColumn: "2 / 4" }}>
-            <JarvisInputBar onSubmit={handleTextSubmit} disabled={false} />
+        {/* Bottom status bar */}
+        <div
+          className="shrink-0 flex items-center justify-between px-6"
+          style={{
+            height: 36,
+            borderTop: "1px solid hsl(var(--border))",
+            background: "hsl(var(--card))",
+          }}
+        >
+          <div className="flex items-center gap-4">
+            <span className="font-mono" style={{ color: "hsl(var(--muted-foreground))", fontSize: 11 }}>
+              Portfolio: <span style={{ color: "hsl(var(--foreground))", fontWeight: 600 }}>${(usePortfolioStore.getState().totalValue || 0).toLocaleString()}</span>
+            </span>
+            <span className="font-mono" style={{ color: "hsl(var(--muted-foreground))", fontSize: 11 }}>
+              Buying Power: <span style={{ color: "hsl(var(--primary))", fontWeight: 600 }}>${(usePortfolioStore.getState().buyingPower || 0).toLocaleString()}</span>
+            </span>
+            <span className="font-mono" style={{ color: "hsl(var(--muted-foreground))", fontSize: 11 }}>
+              Queries: <span style={{ fontWeight: 600 }}>{queries.length}</span>
+            </span>
           </div>
-        )}
+          <span className="font-mono" style={{ color: "hsl(var(--muted-foreground))", fontSize: 10 }}>
+            Portfolio
+          </span>
+        </div>
       </div>
 
       <TradeModal order={pendingOrder} onConfirm={handleTradeConfirm} onCancel={handleTradeCancel} isLoading={tradeLoading} fillResult={fillResult} />
-    </>
+    </div>
   );
 };
 

@@ -368,30 +368,6 @@ const AppResearch = () => {
           />
         </div>
 
-        {/* Bottom status bar */}
-        <div
-          className="shrink-0 flex items-center justify-between px-6"
-          style={{
-            height: 32,
-            borderTop: "1px solid rgba(255,255,255,0.04)",
-            background: "rgba(6, 10, 18, 0.95)",
-          }}
-        >
-          <div className="flex items-center gap-4">
-            <span className="font-mono" style={{ color: "hsl(var(--muted-foreground))", fontSize: 10 }}>
-              Portfolio: <span style={{ color: "hsl(var(--foreground))", fontWeight: 600 }}>${(usePortfolioStore.getState().totalValue || 0).toLocaleString()}</span>
-            </span>
-            <span className="font-mono" style={{ color: "hsl(var(--muted-foreground))", fontSize: 10 }}>
-              Other Value: <span style={{ color: "hsl(var(--primary))", fontWeight: 600 }}>${(usePortfolioStore.getState().buyingPower || 0).toLocaleString()}</span>
-            </span>
-            <span className="font-mono" style={{ color: "hsl(var(--muted-foreground))", fontSize: 10 }}>
-              Chat Length:{queries.length}
-            </span>
-          </div>
-          <span className="font-mono" style={{ color: "hsl(var(--muted-foreground))", fontSize: 9 }}>
-            Portfolio
-          </span>
-        </div>
       </div>
 
       <TradeModal order={pendingOrder} onConfirm={handleTradeConfirm} onCancel={handleTradeCancel} isLoading={tradeLoading} fillResult={fillResult} />

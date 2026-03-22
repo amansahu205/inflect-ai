@@ -1,30 +1,36 @@
 import type { VoiceState } from "@/components/voice/VoiceButton";
 
-export type VoiceProcessingPhase = "transcribe" | "analyze";
+export type ProcessingPhase = "transcribe" | "analyze";
 
 interface VoiceOverlayProps {
   voiceState: VoiceState;
-  /** While `processing`: STT vs query/analyze pipeline (matches E2E test steps). */
-  processingPhase?: VoiceProcessingPhase;
+  processingPhase?: ProcessingPhase;
   onCancel: () => void;
 }
 
-const stageLabels = ["Listening...", "Transcribing...", "Analyzing...", "Speaking..."];
+const stageLabels = ["Listening", "Transcribing", "Analyzing", "Speaking"];
 
-const getActiveStage = (state: VoiceState, processingPhase: VoiceProcessingPhase) => {
+const getActiveStage = (state: VoiceState, phase: ProcessingPhase) => {
   if (state === "recording") return 0;
-  if (state === "processing") return processingPhase === "analyze" ? 2 : 1;
+  if (state === "processing" && phase === "transcribe") return 1;
+  if (state === "processing" && phase === "analyze") return 2;
   if (state === "playing") return 3;
   return -1;
 };
 
-const VoiceOverlay = ({ voiceState, onCancel, processingPhase = "transcribe" }: VoiceOverlayProps) => {
+const VoiceOverlay = ({ voiceState, processingPhase = "transcribe", onCancel }: VoiceOverlayProps) => {
   if (voiceState === "idle") return null;
   const active = getActiveStage(voiceState, processingPhase);
   const ringColor =
     voiceState === "recording" ? "#E05555" :
     voiceState === "processing" ? "#F0A500" :
     voiceState === "playing" ? "#00D68F" : "#378ADD";
+
+  const statusText =
+    active === 0 ? "Listening..." :
+    active === 1 ? "Transcribing..." :
+    active === 2 ? "Analyzing..." :
+    active === 3 ? "Speaking..." : "Processing...";
 
   return (
     <div
@@ -74,7 +80,7 @@ const VoiceOverlay = ({ voiceState, onCancel, processingPhase = "transcribe" }: 
 
       {/* Status text */}
       <p className="font-mono" style={{ color: ringColor, fontSize: 12 }}>
-        {stageLabels[active] || "Processing..."}
+        {statusText}
       </p>
 
       {/* Stage pills */}
@@ -92,7 +98,7 @@ const VoiceOverlay = ({ voiceState, onCancel, processingPhase = "transcribe" }: 
               border: `1px solid ${i <= active ? `${ringColor}40` : "rgba(255,255,255,0.06)"}`,
             }}
           >
-            {label.replace("...", "")}
+            {label}
           </span>
         ))}
       </div>

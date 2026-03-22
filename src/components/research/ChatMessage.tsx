@@ -1,9 +1,17 @@
-import type { AnswerResult, StockQuote, ThesisResult, ResearchMetricData } from "@/types/api";
+import type { AnswerResult, StockQuote, ThesisResult } from "@/types/api";
 import StockCard from "@/components/charts/StockCard";
 import MetricCard from "@/components/charts/MetricCard";
 import CitationCard from "./CitationCard";
 import ThesisCard from "./ThesisCard";
 import RSIGauge from "@/components/charts/RSIGauge";
+
+interface MetricData {
+  metric: string;
+  value: string;
+  period: string;
+  change?: string;
+  changeDirection?: "up" | "down";
+}
 
 export interface ChatMsg {
   id: string;
@@ -11,7 +19,7 @@ export interface ChatMsg {
   text: string;
   answerData?: AnswerResult | null;
   stockQuote?: StockQuote | null;
-  metricData?: ResearchMetricData | null;
+  metricData?: MetricData | null;
   thesisData?: ThesisResult | null;
   thesisLoading?: boolean;
   onGenerateThesis?: () => void;
@@ -63,8 +71,8 @@ const ChatMessage = ({ msg }: { msg: ChatMsg }) => {
               period={msg.metricData.period}
               change={msg.metricData.change}
               changeDirection={msg.metricData.changeDirection}
-              source={msg.metricData.source ?? msg.answerData?.source ?? "LLM"}
-              citation={msg.metricData.citation ?? msg.answerData?.citation ?? undefined}
+              source={msg.answerData?.source || "LLM"}
+              citation={msg.answerData?.citation || undefined}
             />
           </div>
         )}

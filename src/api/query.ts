@@ -1,4 +1,4 @@
-import { apiCall, API_URL, readApiErrorMessage } from "./client";
+import { apiCall, API_URL } from "./client";
 import { supabase } from "@/integrations/supabase/client";
 
 export interface AnalyzeResult {
@@ -11,8 +11,6 @@ export interface AnalyzeResult {
   source: string;
   citation: string | null;
   confidence_level: "HIGH" | "MEDIUM" | "LOW";
-  /** Research path: pipeline validation warnings. */
-  validation?: { ok: boolean; warnings: string[] };
 }
 
 export async function analyzeQuery(
@@ -25,17 +23,9 @@ export async function analyzeQuery(
   });
 }
 
-export interface TranscribeResult {
-  transcript: string;
-  confidence: number;
-  error?: string;
-}
-
-export async function transcribeAudio(audioBlob: Blob): Promise<TranscribeResult> {
-  if (!audioBlob || audioBlob.size < 32) {
-    throw new Error("Recording too short or empty");
-  }
-
+export async function transcribeAudio(
+  audioBlob: Blob
+): Promise<{ transcript: string; confidence: number }> {
   const formData = new FormData();
   formData.append("audio", audioBlob, "recording.webm");
 
@@ -47,11 +37,6 @@ export async function transcribeAudio(audioBlob: Blob): Promise<TranscribeResult
     body: formData,
   });
 
-  if (!response.ok) throw new Error(await readApiErrorMessage(response));
-  const data = (await response.json()) as TranscribeResult;
-  const t = (data.transcript || "").trim();
-  if (!t) {
-    throw new Error(data.error || "No speech recognized — check GROQ_API_KEY / ELEVENLABS_API_KEY on the backend");
-  }
-  return { ...data, transcript: t };
+  if (!response.ok) throw new Error(`Transcription error: ${response.status}`);
+  return response.json();
 }

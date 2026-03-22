@@ -4,13 +4,21 @@ import CitationCard from "./CitationCard";
 import ThesisCard from "./ThesisCard";
 import RSIGauge from "@/components/charts/RSIGauge";
 import PortfolioWidget from "./PortfolioWidget";
-import type { AnswerResult, StockQuote, ThesisResult, ResearchMetricData } from "@/types/api";
+import type { AnswerResult, StockQuote, ThesisResult } from "@/types/api";
 import type { ChartData } from "@/api/chart";
+
+interface MetricData {
+  metric: string;
+  value: string;
+  period: string;
+  change?: string;
+  changeDirection?: "up" | "down";
+}
 
 interface Props {
   answerData: AnswerResult | null;
   stockQuote: StockQuote | null;
-  metricData: ResearchMetricData | null;
+  metricData: MetricData | null;
   thesisData: ThesisResult | null;
   thesisLoading: boolean;
   chartData: ChartData | null;
@@ -56,8 +64,8 @@ const ResearchVisualizationsPanel = ({
 
       {/* Scrollable body */}
       <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-5">
-        {/* Answer section — always show when we have a reply (chart view hides answer if gated on !chartData) */}
-        {answerData && (
+        {/* Answer section */}
+        {answerData && !chartData && (
           <div>
             <SectionLabel>Answer</SectionLabel>
             <div

@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { analyzeQuery, transcribeAudio } from "@/api/query";
 import { getChartData } from "@/api/chart";
-import { getQuote, getMarketHistory, getMetricCard } from "@/api/market";
+import { getQuote } from "@/api/market";
 import { executeTrade as executeTradeApi } from "@/api/trades";
 import useVoiceRecorder from "@/hooks/useVoiceRecorder";
 import { useInflectToast } from "@/components/ui/InflectToast";
@@ -15,8 +15,9 @@ import ResearchPromptBar from "@/components/research/ResearchPromptBar";
 import ResearchVisualizationsPanel from "@/components/research/ResearchVisualizationsPanel";
 import ChatMessage, { type ChatMsg } from "@/components/research/ChatMessage";
 import VoiceOverlay from "@/components/research/VoiceOverlay";
+import type { ProcessingPhase } from "@/components/research/VoiceOverlay";
 import { EXAMPLE_QUERIES } from "@/utils/constants";
-import type { AnswerResult, ThesisResult, TradeOrder, StockQuote, Query, ResearchMetricData } from "@/types/api";
+import type { AnswerResult, ThesisResult, TradeOrder, StockQuote, Query } from "@/types/api";
 import type { AnalyzeResult } from "@/api/query";
 import type { VoiceState } from "@/components/voice/VoiceButton";
 
@@ -34,7 +35,7 @@ const mockAnalyze = (text: string): AnalyzeResult => {
     metric: isMetric ? (lower.includes("margin") ? "Gross Margin" : "Revenue") : null,
     timeframe: null,
     confidence: 0.92,
-    answer: `Offline demo answer for "${text.slice(0, 80)}${text.length > 80 ? "…" : ""}" — set VITE_API_URL and ensure /api/v1/query/analyze succeeds.`,
+    answer: `Analysis for "${text}" — placeholder. Wire up your FastAPI backend.`,
     source: isPriceCheck ? "MARKET_DATA" : isMetric ? "SEC_FILING" : "LLM",
     citation: isMetric ? `${ticker || "AAPL"} 10-K · Filed Nov 3 2023 · Item 7` : null,
     confidence_level: "HIGH",
@@ -87,12 +88,12 @@ const AppResearch = () => {
   const [tradeLoading, setTradeLoading] = useState(false);
   const [fillResult, setFillResult] = useState<{ fill_price: number } | null>(null);
   const [voiceState, setVoiceState] = useState<VoiceState>("idle");
-  const [voiceProcessingPhase, setVoiceProcessingPhase] = useState<"transcribe" | "analyze">("transcribe");
+  const [voiceProcessingPhase, setVoiceProcessingPhase] = useState<ProcessingPhase>("transcribe");
 
   // Right panel state
   const [answerData, setAnswerData] = useState<AnswerResult | null>(null);
   const [stockQuote, setStockQuote] = useState<StockQuote | null>(null);
-  const [metricData, setMetricData] = useState<ResearchMetricData | null>(null);
+  const [metricData, setMetricData] = useState<{ metric: string; value: string; period: string; change?: string; changeDirection?: "up" | "down" } | null>(null);
   const [thesisData, setThesisData] = useState<ThesisResult | null>(null);
   const [thesisLoading, setThesisLoading] = useState(false);
   const [chartData, setChartData] = useState<any>(null);
@@ -117,218 +118,121 @@ const AppResearch = () => {
   useEffect(() => {
     if (!isRecording) return;
     if (audioLevel < 0.02) {
-      const timer = setTimeout(() => {
-        stopRecording();
-        setVoiceProcessingPhase("transcribe");
-        setVoiceState("processing");
-      }, 2000);
+      const timer = setTimeout(() => { stopRecording(); setVoiceState("processing"); }, 2000);
       return () => clearTimeout(timer);
     }
   }, [audioLevel, isRecording, stopRecording]);
+
+  // Transcribe audio
+  useEffect(() => {
+    if (!audioBlob || voiceState !== "processing") return;
+    let cancelled = false;
+    (async () => {
+      try {
+        setVoiceProcessingPhase("transcribe");
+        const r = await transcribeAudio(audioBlob);
+        if (!cancelled) {
+          setVoiceProcessingPhase("analyze");
+          await submitQuery(r.transcript);
+        }
+      } catch {
+        if (!cancelled) showToast("Transcription failed", "error");
+      } finally {
+        if (!cancelled) {
+          setVoiceState("idle");
+          setVoiceProcessingPhase("transcribe");
+        }
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [audioBlob, voiceState]);
 
   const handleMicClick = useCallback(async () => {
     if (voiceState === "idle") {
       const granted = await startRecording();
       if (!granted) { showToast("Microphone access denied", "error"); return; }
-      setVoiceProcessingPhase("transcribe");
       setVoiceState("recording");
     } else if (voiceState === "recording") {
       stopRecording();
-      setVoiceProcessingPhase("transcribe");
       setVoiceState("processing");
     }
   }, [voiceState, startRecording, stopRecording, showToast]);
 
   const handleVoiceCancel = useCallback(() => {
     if (isRecording) stopRecording();
-    setVoiceProcessingPhase("transcribe");
     setVoiceState("idle");
+    setVoiceProcessingPhase("transcribe");
   }, [isRecording, stopRecording]);
 
   const runPipeline = useCallback(async (text: string) => {
     let result: AnalyzeResult;
     try {
       result = USE_BACKEND ? await analyzeQuery(text, { ticker: sessionTicker, timeframe: sessionTimeframe }) : mockAnalyze(text);
-    } catch (e) {
-      /* Do not silently fall back to mock when the real API is enabled — that produced a confusing "Wire up backend" message. */
-      if (USE_BACKEND) {
-        throw e instanceof Error ? e : new Error(String(e));
-      }
-      result = mockAnalyze(text);
-    }
+    } catch { result = mockAnalyze(text); }
 
     if (result.ticker) setTicker(result.ticker);
 
     let quote: StockQuote | null = null;
-    let metric: ResearchMetricData | null = null;
+    let metric: typeof metricData = null;
 
     if (result.intent_type === "price_check" && result.ticker) {
-      try {
-        if (USE_BACKEND) {
-          const t = result.ticker;
-          const [q, hist] = await Promise.all([
-            getQuote(t),
-            getMarketHistory(t, "30d").catch(() => null),
-          ]);
-          quote = hist?.sparkline?.length ? { ...q, sparkline: hist.sparkline } : q;
-        } else {
-          quote = mockQuote(result.ticker);
-        }
-      } catch {
-        quote = mockQuote(result.ticker);
-      }
+      try { quote = USE_BACKEND ? await getQuote(result.ticker) : mockQuote(result.ticker); } catch { quote = mockQuote(result.ticker); }
     }
 
-    const metricTicker = result.ticker || sessionTicker;
-    if (result.metric && metricTicker) {
-      try {
-        if (USE_BACKEND) {
-          const mc = await getMetricCard(metricTicker, result.metric);
-          metric = {
-            metric: mc.metric,
-            value: mc.value,
-            period: mc.period,
-            change: mc.change ?? undefined,
-            changeDirection: mc.change_direction ?? undefined,
-            source: mc.source,
-            citation: mc.citation,
-          };
-        } else {
-          metric = {
-            metric: result.metric,
-            value: result.metric.includes("Margin") ? "44.1%" : "$394.3B",
-            period: result.timeframe || "Q4 2023",
-            change: "+0.8% YoY",
-            changeDirection: "up",
-            source: "SEC_FILING",
-            citation: `${metricTicker} 10-K`,
-          };
-        }
-      } catch {
-        metric = {
-          metric: result.metric,
-          value: "—",
-          period: result.timeframe || "TTM",
-          source: "UNAVAILABLE",
-          citation: null,
-        };
-      }
-    } else if (result.metric) {
-      metric = {
-        metric: result.metric,
-        value: "—",
-        period: result.timeframe || "TTM",
-        source: "UNAVAILABLE",
-        citation: null,
-      };
+    if (result.metric) {
+      metric = { metric: result.metric, value: result.metric.includes("Margin") ? "44.1%" : "$394.3B", period: result.timeframe || "Q4 2023", change: "+0.8% YoY", changeDirection: "up" };
     }
 
     if (user) {
-      const { error: logError } = await supabase.from("queries").insert({
-        user_id: user.id,
-        session_id: sessionId,
-        transcript: text,
-        intent_type: result.intent_type,
-        response_text: result.answer,
-        ticker: result.ticker,
-        mode: "chat",
-      });
-      if (logError) {
-        /* RLS/schema errors must not block the chat UI */
-      }
+      await supabase.from("queries").insert({ user_id: user.id, session_id: sessionId, transcript: text, intent_type: result.intent_type, response_text: result.answer, ticker: result.ticker, mode: "chat" });
     }
 
     const answerResult: AnswerResult = { answer: result.answer, intent_type: result.intent_type, ticker: result.ticker, confidence: result.confidence_level, source: result.source as AnswerResult["source"], citation: result.citation };
     addAnswer(answerResult);
     return { result, quote, metricData: metric, answerResult };
-  }, [user, sessionTicker, sessionTimeframe, setTicker, addAnswer, sessionId, USE_BACKEND]);
+  }, [user, sessionTicker, sessionTimeframe, setTicker, addAnswer, sessionId]);
 
   const submitQuery = useCallback(async (text: string) => {
-    const trimmed = text.trim();
-    if (!trimmed) {
-      showToast("Empty question — type or speak again", "error");
-      return;
-    }
-
-    setChartData(null);
-
-    const userMsg: ChatMsg = { id: crypto.randomUUID(), role: "user", text: trimmed };
+    // Add user message
+    const userMsg: ChatMsg = { id: crypto.randomUUID(), role: "user", text };
     setMessages(prev => [...prev, userMsg]);
 
-    try {
-      const { result, quote, metricData: md, answerResult } = await runPipeline(trimmed);
+    const { result, quote, metricData: md, answerResult } = await runPipeline(text);
 
-      setAnswerData(answerResult);
-      setStockQuote(quote);
-      setMetricData(md);
+    // Update right panel
+    setAnswerData(answerResult);
+    setStockQuote(quote);
+    setMetricData(md);
 
-      const botMsg: ChatMsg = {
-        id: crypto.randomUUID(),
-        role: "bot",
-        text: result.answer,
-        answerData: answerResult,
-        stockQuote: quote,
-        metricData: md,
-        onGenerateThesis: result.ticker ? () => handleGenerateThesis(result.ticker!) : undefined,
-        onPlotTrend: result.ticker ? () => handlePlotTrend(result.ticker!) : undefined,
-      };
-      setMessages(prev => [...prev, botMsg]);
+    // Add bot message
+    const botMsg: ChatMsg = {
+      id: crypto.randomUUID(),
+      role: "bot",
+      text: result.answer,
+      answerData: answerResult,
+      stockQuote: quote,
+      metricData: md,
+      onGenerateThesis: result.ticker ? () => handleGenerateThesis(result.ticker!) : undefined,
+      onPlotTrend: result.ticker ? () => handlePlotTrend(result.ticker!) : undefined,
+    };
+    setMessages(prev => [...prev, botMsg]);
 
-      if (result.intent_type === "trade") {
-        const trade = detectTradeIntent(trimmed);
-        if (trade?.ticker && trade?.quantity) {
-          const estPrice = quote?.price || 189.5;
-          setPendingOrder({
-            ticker: trade.ticker,
-            side: trade.side,
-            quantity: trade.quantity,
-            order_type: "market",
-            estimated_price: estPrice,
-            estimated_total: estPrice * trade.quantity,
-          });
-        }
+    if (result.intent_type === "trade") {
+      const trade = detectTradeIntent(text);
+      const tradeTicker = trade?.ticker || result.ticker;
+      const tradeSide = trade?.side || (/\b(sell|dump|exit)\b/i.test(text) ? "sell" : "buy");
+      const tradeQty = trade?.quantity || 1;
+      if (tradeTicker) {
+        const estPrice = quote?.price || 189.5;
+        setPendingOrder({ ticker: tradeTicker, side: tradeSide, quantity: tradeQty, order_type: "market", estimated_price: estPrice, estimated_total: estPrice * tradeQty });
       }
-
-      const ttsText =
-        result.intent_type === "price_check" && quote
-          ? `${quote.ticker} is at $${quote.price.toFixed(2)}, ${quote.direction} ${Math.abs(quote.change_percent).toFixed(1)} percent`
-          : result.answer.slice(0, 200);
-      speakText(ttsText);
-    } catch (err) {
-      const desc = err instanceof Error ? err.message : "Something went wrong";
-      showToast(desc, "error");
-      setMessages(prev => [
-        ...prev,
-        {
-          id: crypto.randomUUID(),
-          role: "bot",
-          text: `Could not complete that request (${desc}). Check that the API is reachable (VITE_API_URL) and you are signed in if the backend requires auth.`,
-        },
-      ]);
     }
-  }, [runPipeline, showToast]);
 
-  // After submitQuery exists: transcribe when blob is ready in processing state
-  useEffect(() => {
-    if (!audioBlob || voiceState !== "processing") return;
-    let cancelled = false;
-    (async () => {
-      try {
-        const r = await transcribeAudio(audioBlob);
-        if (cancelled) return;
-        setVoiceProcessingPhase("analyze");
-        await submitQuery(r.transcript);
-      } catch (e) {
-        if (!cancelled) {
-          const msg = e instanceof Error ? e.message : "Transcription failed";
-          showToast(msg, "error");
-        }
-      } finally {
-        if (!cancelled) setVoiceState("idle");
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [audioBlob, voiceState, submitQuery, showToast]);
+    const ttsText = result.intent_type === "price_check" && quote
+      ? `${quote.ticker} is at $${quote.price.toFixed(2)}, ${quote.direction} ${Math.abs(quote.change_percent).toFixed(1)} percent`
+      : result.answer.slice(0, 200);
+    speakText(ttsText);
+  }, [runPipeline]);
 
   const handleGenerateThesis = useCallback(async (ticker?: string) => {
     const t = ticker || answerData?.ticker;
@@ -435,11 +339,7 @@ const AppResearch = () => {
         {/* Voice overlay */}
         {voiceState !== "idle" && (
           <div className="px-6 pb-2">
-            <VoiceOverlay
-              voiceState={voiceState}
-              processingPhase={voiceProcessingPhase}
-              onCancel={handleVoiceCancel}
-            />
+            <VoiceOverlay voiceState={voiceState} processingPhase={voiceProcessingPhase} onCancel={handleVoiceCancel} />
           </div>
         )}
 
@@ -455,7 +355,7 @@ const AppResearch = () => {
       </div>
 
       {/* Right column — 340px visualizations */}
-      <div className="shrink-0" style={{ width: 340 }}>
+      <div className="shrink-0 overflow-y-auto" style={{ width: 420 }}>
         <ResearchVisualizationsPanel
           answerData={answerData}
           stockQuote={stockQuote}

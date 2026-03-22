@@ -40,8 +40,7 @@ const MOCK_QUOTES: TickerQuote[] = [
   { ticker: "BA", price: 178.2, change: -0.9, direction: "down" },
 ];
 
-const API_URL =
-  import.meta.env.VITE_API_URL || "https://inflect-backend-symvnfqjla-uc.a.run.app";
+const API_URL = import.meta.env.VITE_API_URL || "https://inflect-backend-symvnfqjla-uc.a.run.app";
 
 export type MarketStatus = "live" | "premarket" | "afterhours" | "closed";
 

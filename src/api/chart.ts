@@ -4,9 +4,6 @@ export interface ChartData {
   x: string[];
   y: number[];
   filingDates?: string[];
-  approxFilingMarkers?: string[];
-  isPlaceholder?: boolean;
-  error?: string;
 }
 
 const USE_BACKEND = true;

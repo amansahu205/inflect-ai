@@ -88,6 +88,7 @@ const AppResearch = () => {
   const [tradeLoading, setTradeLoading] = useState(false);
   const [fillResult, setFillResult] = useState<{ fill_price: number } | null>(null);
   const [voiceState, setVoiceState] = useState<VoiceState>("idle");
+  const [voiceProcessingPhase, setVoiceProcessingPhase] = useState<ProcessingPhase>("transcribe");
 
   // Right panel state
   const [answerData, setAnswerData] = useState<AnswerResult | null>(null);

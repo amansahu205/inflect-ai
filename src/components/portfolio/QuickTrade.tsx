@@ -68,12 +68,27 @@ const QuickTrade = ({ onTradeComplete, quotes: liveQuotes }: Props) => {
     }, 300);
   }, []);
 
+  const fetchPrice = useCallback(async (t: string) => {
+    if (!t) { setEstPrice(null); return; }
+    setFetchingPrice(true);
+    try {
+      const res = await fetch(`${API_URL}/api/v1/market/quote?ticker=${t}`);
+      if (res.ok) {
+        const data = await res.json();
+        setEstPrice(data.price);
+      } else {
+        setEstPrice(null);
+      }
+    } catch { setEstPrice(null); }
+    setFetchingPrice(false);
+  }, []);
+
   const selectTicker = useCallback((symbol: string) => {
     setTicker(symbol);
     setShowDropdown(false);
     setSearchResults([]);
     fetchPrice(symbol);
-  }, []);
+  }, [fetchPrice]);
 
   const fetchPrice = useCallback(async (t: string) => {
     if (!t) { setEstPrice(null); return; }

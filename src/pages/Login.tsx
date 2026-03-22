@@ -21,7 +21,7 @@ const Login = () => {
   const attemptsRef = useRef(0);
   const lockedUntilRef = useRef(0);
 
-  if (!loading && session) return <Navigate to="/app/research" replace />;
+  if (!loading && session) return <Navigate to="/app/home" replace />;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

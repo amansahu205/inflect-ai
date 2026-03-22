@@ -14,6 +14,7 @@ import Login from "./pages/Login.tsx";
 import Register from "./pages/Register.tsx";
 import AppResearch from "./pages/AppResearch.tsx";
 import AppPortfolio from "./pages/AppPortfolio.tsx";
+import AppHome from "./pages/AppHome.tsx";
 import Demo from "./pages/Demo.tsx";
 import NotFound from "./pages/NotFound.tsx";
 

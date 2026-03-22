@@ -345,7 +345,7 @@ const AppResearch = () => {
       </div>
 
       {/* Right column — 340px visualizations */}
-      <div className="shrink-0" style={{ width: 340 }}>
+      <div className="shrink-0 overflow-y-auto" style={{ width: 420 }}>
         <ResearchVisualizationsPanel
           answerData={answerData}
           stockQuote={stockQuote}

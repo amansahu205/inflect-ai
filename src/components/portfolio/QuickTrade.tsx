@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthStore } from "@/store/authStore";
 import { usePortfolioStore } from "@/store/portfolioStore";
@@ -26,6 +26,48 @@ const QuickTrade = ({ onTradeComplete, quotes: liveQuotes }: Props) => {
   const [showConfirm, setShowConfirm] = useState(false);
   const [executing, setExecuting] = useState(false);
 
+  // Search autocomplete state
+  const [searchResults, setSearchResults] = useState<{ symbol: string; description: string }[]>([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [searching, setSearching] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const searchTicker = useCallback((query: string) => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (query.length < 1) { setSearchResults([]); setShowDropdown(false); return; }
+    debounceRef.current = setTimeout(async () => {
+      setSearching(true);
+      try {
+        const res = await fetch(`${API_URL}/api/v1/market/quote?ticker=${query}`);
+        if (res.ok) {
+          const data = await res.json();
+          // Build a single result from the quote endpoint
+          setSearchResults([{ symbol: query.toUpperCase(), description: data.ticker || query.toUpperCase() }]);
+          setShowDropdown(true);
+        } else {
+          setSearchResults([]);
+          setShowDropdown(false);
+        }
+      } catch {
+        setSearchResults([]);
+        setShowDropdown(false);
+      }
+      setSearching(false);
+    }, 300);
+  }, []);
+
   const fetchPrice = useCallback(async (t: string) => {
     if (!t) { setEstPrice(null); return; }
     setFetchingPrice(true);
@@ -40,6 +82,14 @@ const QuickTrade = ({ onTradeComplete, quotes: liveQuotes }: Props) => {
     } catch { setEstPrice(null); }
     setFetchingPrice(false);
   }, []);
+
+  const selectTicker = useCallback((symbol: string) => {
+    setTicker(symbol);
+    setShowDropdown(false);
+    setSearchResults([]);
+    fetchPrice(symbol);
+  }, [fetchPrice]);
+
 
   const estTotal = estPrice ? estPrice * quantity : 0;
   const fillPrice = estPrice ? estPrice * (side === "buy" ? 1.0005 : 0.9995) : 0;
@@ -172,14 +222,27 @@ const QuickTrade = ({ onTradeComplete, quotes: liveQuotes }: Props) => {
 
         {/* Fields */}
         <div className="space-y-3 relative z-10">
-          <div>
+          <div className="relative" ref={dropdownRef}>
             <label className="uppercase text-xs tracking-wider block mb-1" style={{ color: "hsl(var(--muted-foreground))" }}>Ticker</label>
             <input
               type="text"
               value={ticker}
-              onChange={(e) => setTicker(e.target.value.toUpperCase())}
-              onBlur={() => fetchPrice(ticker)}
-              placeholder="e.g. AAPL"
+              onChange={(e) => {
+                const val = e.target.value.toUpperCase();
+                setTicker(val);
+                searchTicker(val);
+              }}
+              onBlur={() => {
+                // Delay to allow dropdown click
+                setTimeout(() => fetchPrice(ticker), 200);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Escape") setShowDropdown(false);
+                if (e.key === "Enter" && searchResults.length > 0) {
+                  selectTicker(searchResults[0].symbol);
+                }
+              }}
+              placeholder="Search stock... e.g. AAPL"
               className="w-full font-mono text-sm rounded-xl px-3 py-2.5 transition-colors outline-none"
               style={{
                 background: "#0F1820",
@@ -189,12 +252,43 @@ const QuickTrade = ({ onTradeComplete, quotes: liveQuotes }: Props) => {
               onFocus={(e) => {
                 e.currentTarget.style.borderColor = "hsl(var(--cyan))";
                 e.currentTarget.style.background = "rgba(0,200,255,0.05)";
+                if (searchResults.length > 0) setShowDropdown(true);
               }}
-              onBlurCapture={(e) => {
-                e.currentTarget.style.borderColor = "hsl(var(--border))";
-                e.currentTarget.style.background = "#0F1820";
-              }}
+              onFocusCapture={() => {}}
             />
+            {/* Search dropdown */}
+            {showDropdown && searchResults.length > 0 && (
+              <div
+                className="absolute left-0 right-0 mt-1 rounded-xl overflow-hidden"
+                style={{
+                  background: "#0F1820",
+                  border: "1px solid hsl(var(--border))",
+                  zIndex: 30,
+                  maxHeight: 200,
+                  overflowY: "auto",
+                }}
+              >
+                {searchResults.map((r) => (
+                  <button
+                    key={r.symbol}
+                    className="w-full flex items-center gap-2 px-3 py-2.5 text-left transition-colors"
+                    style={{ borderBottom: "1px solid hsl(var(--border))" }}
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => selectTicker(r.symbol)}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(0,200,255,0.06)")}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                  >
+                    <span className="font-mono font-bold" style={{ color: "hsl(var(--cyan))", fontSize: 13 }}>{r.symbol}</span>
+                    <span style={{ color: "hsl(var(--muted-foreground))", fontSize: 11 }}>{r.description}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+            {searching && (
+              <div className="absolute right-3 top-9">
+                <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: "hsl(var(--cyan))", borderTopColor: "transparent" }} />
+              </div>
+            )}
           </div>
 
           <div>

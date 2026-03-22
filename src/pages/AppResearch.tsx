@@ -349,10 +349,12 @@ const AppResearch = () => {
           />
         </div>
 
-        {/* Tile 6 — Input Bar */}
-        <div style={{ gridColumn: "2 / 4" }}>
-          <JarvisInputBar onSubmit={handleTextSubmit} disabled={false} />
-        </div>
+        {/* Tile 6 — Input Bar (hidden in chat mode since chat has its own input) */}
+        {mode !== "chat" && (
+          <div style={{ gridColumn: "2 / 4" }}>
+            <JarvisInputBar onSubmit={handleTextSubmit} disabled={false} />
+          </div>
+        )}
       </div>
 
       <TradeModal order={pendingOrder} onConfirm={handleTradeConfirm} onCancel={handleTradeCancel} isLoading={tradeLoading} fillResult={fillResult} />
